@@ -1,0 +1,3 @@
+[submodule "cflib2"]
+	path = cflib2
+	url = https://github.com/NiccoGazza/crazyflie-lib-python
