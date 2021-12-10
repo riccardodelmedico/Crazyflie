@@ -87,7 +87,8 @@ try:
     vicon.SetStreamMode(ViconDataStream.Client.StreamMode.EClientPullPreFetch)
     logging.debug("Fetched! Pulled frame number: %s" if vicon.GetFrame()
                   else "Vicon is not streaming in ClientPreFetch mode!",
-                  str(vicon.GetFrameNumber()))
+                  vicon.GetFrameNumber())
+                  #str(vicon.GetFrameNumber()))
 except ViconDataStream.DataStreamException as exc:
     logging.error("Error using ClientPreFetch mode --> %s", str(exc))
 logging.info("ClientPreFetch mode available.")

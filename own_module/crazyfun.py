@@ -4,6 +4,7 @@ import os
 import time
 import numpy as np
 import math
+from pytictoc import TicToc
 from datetime import datetime, timedelta
 from pathlib import Path
 from cflib.crazyflie.syncLogger import SyncLogger
@@ -13,6 +14,8 @@ from own_module import script_variables as sc_v, script_setup as sc_s
 from cflib.positioning.position_hl_commander import PositionHlCommander
 import signal
 
+t = TicToc()
+first_iter = True
 
 def datetime2matlabdatenum(dt):
     """
@@ -49,18 +52,66 @@ def print_callback(timestamp, data, log_conf):
     :rtype: None
     """
 
-    pos_x = data['stateEstimate.x']
-    pos_y = data['stateEstimate.y']
-    pos_z = data['stateEstimate.z']
+    pos_x = data['kalman.stateX']
+    pos_y = data['kalman.stateY']
+    pos_z = data['kalman.stateZ']
     roll = data['stabilizer.roll']
     pitch = data['stabilizer.pitch']
     yaw = data['stabilizer.yaw']
+    global battery
+    battery = data['pm.state']
+    # Print state estimate to file
+
+    int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
+
+
+def print_callback_vel_est(timestamp, data, log_conf):
+    """
+    Prints gathered data to a specific file.
+
+    :param data: Data to be logged.
+    :type data:
+    :return: None.
+    :rtype: None
+    """
+    global first_iter, old_position
+
+    # if first_iter:
+    #     first_iter = False
+    #
+    #     # Get current drone position and orientation in Vicon
+    #     old_position = sc_s.vicon. \
+    #         GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
+    #
+    #
+    #     # Converts in meters
+    #     old_position = np.array([float(old_position[0] / 1000),
+    #                       float(old_position[1] / 1000),
+    #                       float(old_position[2] / 1000)])
+    # else:
+    #     dt = t.tocvalue() #seconds
+    #     new_position = sc_s.vicon. \
+    #         GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
+    #     new_position = np.array([float(new_position[0] / 1000),
+    #                       float(new_position[1] / 1000),
+    #                       float(new_position[2] / 1000)])
+    #     print(f'new_pos:{new_position}, old_position:{old_position}, dt:{dt}')
+    #     vicon_vel = (new_position-old_position)/dt
+    #     old_position = new_position
+
+    pos_x = data['kalman.stateX']
+    pos_y = data['kalman.stateY']
+    pos_z = data['kalman.stateZ']
+    v_x = data['kalman.statePX']
+    v_y = data['kalman.statePY']
+    v_z = data['kalman.statePZ']
 
     global battery
     battery = data['pm.state']
-
     # Print state estimate to file
-    int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
+    int_matlab.write(pos_x, pos_y, pos_z, v_x, v_y, v_z)
+    # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
+    # t.tic()
 
 
 def datalog_async(sync_crazyflie, log_conf):
@@ -78,7 +129,7 @@ def datalog_async(sync_crazyflie, log_conf):
 
     crazyflie = sync_crazyflie.cf
     crazyflie.log.add_config(log_conf)
-    log_conf.data_received_cb.add_callback(print_callback)
+    log_conf.data_received_cb.add_callback(print_callback_vel_est)
 
 
 def datalog(sync_crazyflie):
@@ -96,12 +147,16 @@ def datalog(sync_crazyflie):
     global datalog_period
 
     measure_log = LogConfig(name='TotalEstimate', period_in_ms=datalog_period)
-    measure_log.add_variable('stateEstimate.x', 'float')
-    measure_log.add_variable('stateEstimate.y', 'float')
-    measure_log.add_variable('stateEstimate.z', 'float')
-    measure_log.add_variable('stabilizer.roll', 'float')
-    measure_log.add_variable('stabilizer.pitch', 'float')
-    measure_log.add_variable('stabilizer.yaw', 'float')
+    measure_log.add_variable('kalman.stateX', 'float')
+    measure_log.add_variable('kalman.stateY', 'float')
+    measure_log.add_variable('kalman.stateZ', 'float')
+    measure_log.add_variable('kalman.statePX', 'float')
+    measure_log.add_variable('kalman.statePY', 'float')
+    measure_log.add_variable('kalman.statePZ', 'float')
+    # measure_log.add_variable('stabilizer.roll', 'float')
+    # measure_log.add_variable('stabilizer.pitch', 'float')
+    # measure_log.add_variable('stabilizer.yaw', 'float')
+
     measure_log.add_variable('pm.state', 'int8_t')
 
     datalog_async(sync_crazyflie, measure_log)
@@ -411,7 +466,8 @@ class MatlabPrint:
             0: "vicon_data",
             1: "setpoint_data",
             2: "internal_data",
-            3: "wand_data"
+            3: "wand_data",
+            4: "command_data"
         }
 
         folder = print_type.get(flag, "Unmanaged")
@@ -612,7 +668,8 @@ vicon_matlab = MatlabPrint(flag=0)
 set_matlab = MatlabPrint(flag=1)
 int_matlab = MatlabPrint(flag=2)
 wand_matlab = MatlabPrint(flag=3)
-
+command_matlab = MatlabPrint(flag= 4)
+command_matlab.write(0,0,0)
 safety_offset = 0.3
 time_limit = 60  # [s]
 tracking = True

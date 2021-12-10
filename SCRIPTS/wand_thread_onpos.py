@@ -4,6 +4,7 @@ import time
 import numpy as np
 from numpy import linalg
 from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
+from cflib.positioning.motion_commander import MotionCommander
 from cflib.positioning.position_hl_commander import PositionHlCommander
 from own_module import crazyfun as crazy, script_setup as sc_s, \
     script_variables as sc_v
@@ -31,23 +32,21 @@ while crazy.run:
         equal_pos += 1
     precedent = sc_v.wand_pos  # update precedent
 
-print("10s before taking off! Prepare to take a video!")
-time.sleep(10)
+print("5s before taking off! Prepare to take a video!")
+time.sleep(5)
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
     scf.cf.param.set_value('stabilizer.estimator', 2)  # set KF as estimator
     scf.cf.param.set_value('commander.enHighLevel', '1')
-
-    crazy.reset_estimator(scf)
+    scf.cf.param.set_value('kalman.pNAcc_xy', 1.5)
+    scf.cf.param.set_value('kalman.pNAcc_z', 2.0)
 
     crazy.int_matlab.write("% x y z qx qy qz qw")
     crazy.set_matlab.write("% set_x set_y set_z")
 
     datalog = crazy.datalog(scf)
     datalog.start()
-
-    time.sleep(0.5)
 
     crazy.run = True
     est_thread = threading.Thread(target=crazy.repeat_fun,
@@ -59,26 +58,34 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     est_thread.daemon = True
 
     est_thread.start()
+    InitialPos = np.array([0.0, 0.0, 0.0])
+    InitialPos = sc_s.vicon. \
+        GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
+
+    scf.cf.param.set_value('kalman.initialX', float(InitialPos[0]/1000))
+    scf.cf.param.set_value('kalman.initialY', float(InitialPos[1]/1000))
+    scf.cf.param.set_value('kalman.initialZ', float(InitialPos[2]/1000))
+    crazy.reset_estimator(scf)
+    print(f'Posizione iniziale: {InitialPos}')
 
     with PositionHlCommander(
             scf,
-            x=0.0, y=0.0, z=0.0,
+            x=InitialPos[0]/1000, y=InitialPos[1]/1000, z=InitialPos[2]/1000,
             default_velocity=0.3,
             default_height=0.5,
             controller=PositionHlCommander.CONTROLLER_PID) as pc:
 
         logging.info("Take-off!")
-
         lowPowerCount = 0
 
         while lowPowerCount < 5:
             crazy.wand_setpoint = crazy.wand_matlab.read_point()
             print(crazy.wand_setpoint)
-
+            if len(crazy.wand_setpoint) != 3:
+                break
             pc.go_to(float(crazy.wand_setpoint[0]),
                      float(crazy.wand_setpoint[1]),
                      float(crazy.wand_setpoint[2]))
-
             crazy.set_matlab.write(crazy.wand_setpoint[0],
                                    crazy.wand_setpoint[1],
                                    crazy.wand_setpoint[2])
