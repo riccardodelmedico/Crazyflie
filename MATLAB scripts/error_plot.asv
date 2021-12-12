@@ -19,12 +19,10 @@ end
 int_drone_velx = interp1(cust_time, drone_vel_x, new_time);
 int_drone_vely = interp1(cust_time, drone_vel_y, new_time);
 
-% x-velocity
 vx = interp1(new_time, new_vel_x, new_time);
 error_vx = abs(int_drone_velx - vx);
 mean_error_vx = mean(error_vx)
-
-% y-velocity
+%err_vx = mean(abs(int_drone_velx - error_x))
 vy = interp1(new_time, new_vel_y, new_time);
 error_vy = abs(int_drone_vely - vy);
-mean_error_vy = mean(error_vy)
+mean_error_vy = mean(err)
