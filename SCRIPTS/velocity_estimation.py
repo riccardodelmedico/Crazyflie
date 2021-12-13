@@ -47,10 +47,10 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     scf.cf.param.set_value('kalman.initialX', float(InitialPos[0]/1000))
     scf.cf.param.set_value('kalman.initialY', float(InitialPos[1]/1000))
     scf.cf.param.set_value('kalman.initialZ', float(InitialPos[2]/1000))
-    scf.cf.param.set_value('velCtlPid.vxKp', 50.0)
-    scf.cf.param.set_value('velCtlPid.vyKp', 70.0)
-    scf.cf.param.set_value('velCtlPid.vxKi',2.0)
-    scf.cf.param.set_value('velCtlPid.vyKi', 3.0)
+    # scf.cf.param.set_value('velCtlPid.vxKp', 50.0)
+    # scf.cf.param.set_value('velCtlPid.vyKp', 70.0)
+    # scf.cf.param.set_value('velCtlPid.vxKi',2.0)
+    # scf.cf.param.set_value('velCtlPid.vyKi', 3.0)
     #crazy.reset_estimator(scf)
     scf.cf.param.set_value('kalman.resetEstimation', 1)
     time.sleep(1)
@@ -105,6 +105,11 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     # for i in range(10):
     #     scf.cf.commander.send_setpoint(0.0, 0.0, 0, 40500)
     #     time.sleep(0.3)
+    vel_ref = np.array([0.0, 0.0])
+    vel_error = np.array([0.0, 0.0])
+    k_x = 0.1
+    k_y = 0.1
+    k_vel = np.array([[k_x, 0.0], [0.0, k_y]])
     with PositionHlCommander(
                     scf,
                     x=InitialPos[0]/1000, y=InitialPos[1]/1000, z=InitialPos[2]/1000,
@@ -114,26 +119,41 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
         print('Take Off ....')
         time.sleep(1)
-        plot= True
+        plot = True
         for i in range(1):
             for j in np.arange(0.0, 6.28, 0.05):
-                scf.cf.commander.send_hover_setpoint(math.sin(j)/4,
-                                                     math.sin(j)/4,
-                                                     0.0,
-
-                                                     0.5)
+                vel_ref[0:2] = (math.sin(j)/4, math.sin(j)/4)
                 if plot:
                     CommandPos = sc_s.vicon. \
                         GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
                     crazy.command_matlab.write(float(CommandPos[0] / 1000),
                                                float(CommandPos[1] / 1000),
-                                               float(CommandPos[2] / 1000))
+                                               float(CommandPos[2] / 1000),
+                                               0.0, 0.0)
                     plot = False
-                crazy.command_matlab.write(math.sin(j)/4,math.sin(j)/4,0.0)
 
+
+                crazy.callback_mutex.acquire(blocking=True)
+                vel_error = vel_ref - sc_v.vel_estimate[0:2]
+                crazy.callback_mutex.release()
+
+                vel_comm = vel_ref[0:2] + k_vel.dot(vel_error)
+                scf.cf.commander.send_hover_setpoint(vel_comm[0],
+                                                     vel_comm[1],
+                                                     0.0,
+                                                     0.5)
+                crazy.command_matlab.write(vel_ref[0], vel_ref[1], 0.0,
+                                           vel_comm[0], vel_comm[1])
                 time.sleep(0.1)
+        for k in range(5):
+            scf.cf.commander.send_position_setpoint(0.0,0.0, 0.5, 0.0)
+            time.sleep(0.2)
+        for i in range(3):
+            scf.cf.commander.send_position_setpoint(0.0, 0.0, 0.2, 0.0)
+            time.sleep(0.2)
 
-        pc.go_to(InitialPos[0]/1000,InitialPos[1]/1000,0.5)
+        # pc.go_to(InitialPos[0]/1000, InitialPos[1]/1000, 0.5)
+
     #
     # scf.cf.commander.send_position_setpoint(0.0,0.0,0.5,0.0)
     # time.sleep(2)
@@ -158,9 +178,6 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
         #     if crazy.battery == 3:
         #         lowPowerCount = lowPowerCount + 1
         #     else:
-    '''math.cos(j)/2,
-                                           math.sin(j)/2,
-                                           0.0'''
         #         lowPowerCount = 0
 
     # time.sleep(5)

@@ -13,6 +13,7 @@ from vicon_dssdk import ViconDataStream
 from own_module import script_variables as sc_v, script_setup as sc_s
 from cflib.positioning.position_hl_commander import PositionHlCommander
 import signal
+import threading
 
 t = TicToc()
 first_iter = True
@@ -74,44 +75,19 @@ def print_callback_vel_est(timestamp, data, log_conf):
     :return: None.
     :rtype: None
     """
-    global first_iter, old_position
-
-    # if first_iter:
-    #     first_iter = False
-    #
-    #     # Get current drone position and orientation in Vicon
-    #     old_position = sc_s.vicon. \
-    #         GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
-    #
-    #
-    #     # Converts in meters
-    #     old_position = np.array([float(old_position[0] / 1000),
-    #                       float(old_position[1] / 1000),
-    #                       float(old_position[2] / 1000)])
-    # else:
-    #     dt = t.tocvalue() #seconds
-    #     new_position = sc_s.vicon. \
-    #         GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
-    #     new_position = np.array([float(new_position[0] / 1000),
-    #                       float(new_position[1] / 1000),
-    #                       float(new_position[2] / 1000)])
-    #     print(f'new_pos:{new_position}, old_position:{old_position}, dt:{dt}')
-    #     vicon_vel = (new_position-old_position)/dt
-    #     old_position = new_position
-
+    callback_mutex.acquire(blocking=True)
     pos_x = data['kalman.stateX']
     pos_y = data['kalman.stateY']
     pos_z = data['kalman.stateZ']
-    v_x = data['kalman.statePX']
-    v_y = data['kalman.statePY']
-    v_z = data['kalman.statePZ']
-
+    v_x = sc_v.vel_estimate[0] = data['kalman.statePX']
+    v_y = sc_v.vel_estimate[1] = data['kalman.statePY']
+    v_z = sc_v.vel_estimate[2] = data['kalman.statePZ']
+    callback_mutex.release()
     global battery
     battery = data['pm.state']
     # Print state estimate to file
     int_matlab.write(pos_x, pos_y, pos_z, v_x, v_y, v_z)
     # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
-    # t.tic()
 
 
 def datalog_async(sync_crazyflie, log_conf):
@@ -675,3 +651,4 @@ time_limit = 60  # [s]
 tracking = True
 pos_limit = 0.001  # [m]
 max_equal_pos = 10
+callback_mutex = threading.Semaphore(value=1)

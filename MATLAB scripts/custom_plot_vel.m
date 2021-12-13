@@ -2,7 +2,7 @@ clear; close all; clc
 command_flag = 1;
 
 %% File loading
-name = "crazyfun__20211210_165011.txt";
+name = "crazyfun__20211213_142851.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -60,13 +60,14 @@ int_vz = internal_data(:,6);           % /
 int_time = datetime(internal_data(:,end), 'ConvertFrom', 'datenum');
 
 if(command_flag)
-    command_vel_x = command_data(2:end,1);
-    command_vel_y = command_data(2:end,2);
-    command_vel_z = command_data(2:end,3);
-    command_vel_x_0 = command_data(1,1);
-    command_vel_y_0 = command_data(1,2);
-    command_vel_z_0 = command_data(1,3);
-
+    ref_vel_x = command_data(2:end,1);
+    ref_vel_y = command_data(2:end,2);
+    ref_vel_z = command_data(2:end,3);
+    ref_vel_x_0 = command_data(1,1);
+    ref_vel_y_0 = command_data(1,2);
+    ref_vel_z_0 = command_data(1,3);
+    comm_vel_x = command_data(2:end,4);
+    comm_vel_y = command_data(2:end,5);
     command_time = datetime(command_data(2:end,end), 'ConvertFrom', 'datenum');
 end
 
@@ -92,8 +93,9 @@ grid on
 plot(cust_time, drone_vel_x,'r')
 plot(int_time, int_vx,'b')
 if(command_flag)
-    plot(command_time, command_vel_x, 'g --')
-    legend('Vicon', 'Estimate', 'Velocity Command')
+    plot(command_time, ref_vel_x, 'g --')
+    plot(command_time, comm_vel_x, 'm --')
+    legend('Vicon', 'Estimate', 'Velocity Reference','Velocity Command')
 end
 ylabel("m/s")
 title("Vx")
@@ -104,8 +106,9 @@ grid on
 plot(cust_time, drone_vel_y,'r')
 plot(int_time, int_vy,'b')
 if(command_flag)
-    plot(command_time, command_vel_y, 'g --')
-    legend('Vicon', 'Estimate', 'Velocity Command')
+    plot(command_time, ref_vel_y, 'g --')
+    plot(command_time, comm_vel_y, 'm --')
+    legend('Vicon', 'Estimate', 'Velocity Reference','Velocity Command')
 end
 ylabel("m/s")
 title("Vy")
@@ -116,7 +119,7 @@ grid on
 plot(cust_time, drone_vel_z,'r')
 plot(int_time, int_vz,'b')
 if(command_flag)
-    plot(command_time, command_vel_z, 'g --')
+    plot(command_time, ref_vel_z, 'g --')
     legend('Vicon', 'Estimate', 'Velocity Command')
 end
 ylabel("m/s")
@@ -124,9 +127,9 @@ title("Vz")
 
 %% Integration of Velocity Command 
 if(command_flag)
-    pos_comm_from_vel_x = integrated_command_velocity(command_vel_x,command_vel_x_0);
-    pos_comm_from_vel_y = integrated_command_velocity(command_vel_y,command_vel_y_0);
-    pos_comm_from_vel_z = integrated_command_velocity(command_vel_z,command_vel_z_0);
+    pos_comm_from_vel_x = integrated_command_velocity(ref_vel_x,ref_vel_x_0);
+    pos_comm_from_vel_y = integrated_command_velocity(ref_vel_y,ref_vel_y_0);
+    pos_comm_from_vel_z = integrated_command_velocity(ref_vel_z,ref_vel_z_0);
 end
 
 %% Comparison between positions
@@ -145,7 +148,7 @@ grid on
 plot(cust_time, drone_posx,'r ')
 plot(int_time, int_px,'b')
 if(command_flag)
-plot(command_time,pos_comm_from_vel_x,'c')
+plot(command_time, pos_comm_from_vel_x,'c')
 end
 %plot(cust_time, interp_posx, 'g')
 ylabel("meter [m]")
@@ -186,25 +189,24 @@ else
     figure2('name', "Error between velocities")
 end
  
-subplot(2,1,1)
+subplot(3,1,1)
 hold on
 grid on
 plot(new_time, error_vx,'r')
 ylabel("m/s")
 title("Error in Vx")
 
-subplot(2,1,2)
+subplot(3,1,2)
 hold on
 grid on
 plot(new_time, error_vy,'r')
 ylabel("m/s")
 title("Error in Vy")
-% 
-% subplot(3,1,3)
-% hold on
-% grid on
-% plot(cust_time, error_z,'r')
-% %plot(int_time, int_pz,'b')
-% ylabel("meter [m]")
-% title("Error in Z coordinates")
+
+subplot(3,1,3)
+hold on
+grid on
+plot(new_time, error_vz,'r')
+ylabel("m/s")
+title("Error in Vz")
 
