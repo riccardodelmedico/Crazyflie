@@ -2,7 +2,7 @@ clear; close all; clc
 command_flag = 1;
 
 %% File loading
-name = "crazyfun__20211213_142851.txt";
+name = "crazyfun__20211213_142225.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -71,12 +71,10 @@ if(command_flag)
     command_time = datetime(command_data(2:end,end), 'ConvertFrom', 'datenum');
 end
 
-%int_int_px = interp1(int_time, int_px, int_time);
-%int_drone_posx = interp1(cust_time, drone_posx, new_time);
-
 clear vicon_data internal_data
 
 %% Comparison between velocities
+
 if exist('figure2') == 0  %#ok<*EXIST>
     figure('name', "Comparison between Velocities")
 else
@@ -126,6 +124,7 @@ ylabel("m/s")
 title("Vz")
 
 %% Integration of Velocity Command 
+
 if(command_flag)
     pos_comm_from_vel_x = integrated_command_velocity(ref_vel_x,ref_vel_x_0);
     pos_comm_from_vel_y = integrated_command_velocity(ref_vel_y,ref_vel_y_0);
@@ -179,9 +178,73 @@ ylabel("meter [m]")
 legend('Vicon', 'Estimate')
 title("Z coordinates")
 
-%% Error between internal and vicon data
-% This section ...
-error_plot;
+%% Error between internal and vicon position
+% This section analyzes the estimate error between internal estimate
+% position and vicon position 
+%position_error;
+
+% Output of get_time will also be used for Velocity Error
+[new_time, first_index, size] = get_time(cust_time, int_time);
+
+% Compute the 'new' position used for error computation
+% (nota: questo passo è necessario per avere un calcolo coerente
+% dell'errore, dal momento che i dati interni del drone e i dati del vicon
+% sono ottenuti per tempi diversi e a frequenza diversa
+new_pos_x = int_px(first_index:first_index+size-1);
+new_pos_y = int_py(first_index:first_index+size-1);
+new_pos_z = int_pz(first_index:first_index+size-1);
+new_pos = [new_pos_x, new_pos_y, new_pos_z];
+drone_pos = [drone_posx, drone_posy, drone_posz];
+
+[pos_error, mean_pos_error] = get_error(cust_time, new_time, ...
+                                         drone_pos, new_pos);
+
+fprintf("Mean Position Error:\n x: %f, y: %f, z: %f\n", ...
+        mean_pos_error(1), mean_pos_error(2), mean_pos_error(3));
+if exist('figure2') == 0  %#ok<*EXIST>
+    figure('name', "Error between position")
+else
+    figure2('name', "Error between position")
+end
+
+subplot(3,1,1)
+hold on
+grid on
+plot(new_time, pos_error(:,1),'r')
+ylabel("[m]")
+title("Error in x")
+
+subplot(3,1,2)
+hold on
+grid on
+plot(new_time, pos_error(:,2),'r')
+ylabel("[m]")
+title("Error in y")
+
+subplot(3,1,3)
+hold on
+grid on
+plot(new_time, pos_error(:,3),'r')
+ylabel("[m]")
+title("Error in z")
+
+%% Error between internal and vicon velocity
+% This section analyzes the estimate error between internal estimate
+% velocity and vicon velocity, obtained simply by taking time derivative of
+% its position
+
+% Compute the 'new' velocity used for error computation
+new_vel_x = int_vx(first_index:first_index+size-1);
+new_vel_y = int_vy(first_index:first_index+size-1);
+new_vel_z = int_vz(first_index:first_index+size-1);
+new_vel = [new_vel_x, new_vel_y, new_vel_z];
+drone_vel = [drone_vel_x, drone_vel_y, drone_vel_z];
+
+[vel_error, mean_vel_error] = get_error(cust_time, new_time, ...
+                                         drone_vel, new_vel);
+
+fprintf("Mean Velocity Error:\n x: %f, y: %f, z: %f\n", ...
+        mean_vel_error(1), mean_vel_error(2), mean_vel_error(3));
 
 if exist('figure2') == 0  %#ok<*EXIST>
     figure('name', "Error between velocities")
@@ -192,21 +255,21 @@ end
 subplot(3,1,1)
 hold on
 grid on
-plot(new_time, error_vx,'r')
-ylabel("m/s")
+plot(new_time, vel_error(:,1),'r')
+ylabel("[m/s]")
 title("Error in Vx")
 
 subplot(3,1,2)
 hold on
 grid on
-plot(new_time, error_vy,'r')
-ylabel("m/s")
+plot(new_time, vel_error(:,2),'r')
+ylabel("[m/s]")
 title("Error in Vy")
 
 subplot(3,1,3)
 hold on
 grid on
-plot(new_time, error_vz,'r')
-ylabel("m/s")
+plot(new_time, vel_error(:,3),'r')
+ylabel("[m/s]")
 title("Error in Vz")
 
