@@ -48,6 +48,7 @@ def repeat_fun(period, func, *args):
 
 target_pos = np.array([0.0, 0.0, 0.0])
 def update_virtual_target(obj_target,dt=0.05):
+    # integrate velociticy and acceleration with forward euler
     obj_target.mutex.acquire(True)
     if np.linalg.norm(obj_target.v,2) != 0:
         obj_target.p += obj_target.v * dt + obj_target.omega_vers_hat.dot(obj_target.v/np.linalg.norm(obj_target.v,2))*obj_target.a* dt * dt /2

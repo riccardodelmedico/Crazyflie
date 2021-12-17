@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Aggiunta Libreria di Vollaro &amp;Co e gli script usati">
-      <change afterPath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Modifica guida e target per girare sui nostri PC, ma la guida non funziona">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/guidance_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/guidance_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SCRIPTS/target_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/target_class.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -148,7 +145,14 @@
       <option name="project" value="LOCAL" />
       <updated>1635436096855</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Modifica guida e target per girare sui nostri PC, ma la guida non funziona">
+      <created>1639758334391</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1639758334391</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -165,6 +169,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Aggiunta Libreria di Vollaro &amp;Co e gli script usati" />
-    <option name="LAST_COMMIT_MESSAGE" value="Aggiunta Libreria di Vollaro &amp;Co e gli script usati" />
+    <MESSAGE value="Modifica guida e target per girare sui nostri PC, ma la guida non funziona" />
+    <option name="LAST_COMMIT_MESSAGE" value="Modifica guida e target per girare sui nostri PC, ma la guida non funziona" />
   </component>
 </project>
