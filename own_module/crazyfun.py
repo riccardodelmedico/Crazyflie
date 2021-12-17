@@ -76,9 +76,9 @@ def print_callback_vel_est(timestamp, data, log_conf):
     :rtype: None
     """
     callback_mutex.acquire(blocking=True)
-    pos_x = data['kalman.stateX']
-    pos_y = data['kalman.stateY']
-    pos_z = data['kalman.stateZ']
+    pos_x = sc_v.pos_estimate[0] = data['kalman.stateX']
+    pos_y = sc_v.pos_estimate[1] = data['kalman.stateY']
+    pos_z = sc_v.pos_estimate[2] = data['kalman.stateZ']
     v_x = sc_v.vel_estimate[0] = data['kalman.statePX']
     v_y = sc_v.vel_estimate[1] = data['kalman.statePY']
     v_z = sc_v.vel_estimate[2] = data['kalman.statePZ']
@@ -321,11 +321,13 @@ def pose_sending(sync_cf):
                       float(sc_v.drone_pos[2] / 1000))
 
     # Send to drone estimator
-    sync_cf.cf.extpos.send_extpose(sc_v.drone_pos[0], sc_v.drone_pos[1],
-                                   sc_v.drone_pos[2],
-                                   sc_v.drone_or[0], sc_v.drone_or[1],
-                                   sc_v.drone_or[2], sc_v.drone_or[3])
+    # sync_cf.cf.extpos.send_extpose(sc_v.drone_pos[0], sc_v.drone_pos[1],
+    #                                sc_v.drone_pos[2],
+    #                                sc_v.drone_or[0], sc_v.drone_or[1],
+    #                                sc_v.drone_or[2], sc_v.drone_or[3])
 
+    sync_cf.cf.extpos.send_extpos(sc_v.drone_pos[0], sc_v.drone_pos[1],
+                                   sc_v.drone_pos[2])
     # logging.debug("sent pose: %s %s",
     #               str(sc_v.drone_pos), str(sc_v.drone_or))
 
@@ -619,6 +621,9 @@ vicon2drone_period = 0.1  # [s]
 wand_period = 0.1  # [s]
 obstacle_period = 0.1  # [s]
 
+# Period at which the target update its position
+target_period = 0.01 # [s]
+
 # Period used in Log configurations
 datalog_period = 10  # ms
 posvar_period = 500  # ms
@@ -652,3 +657,7 @@ tracking = True
 pos_limit = 0.001  # [m]
 max_equal_pos = 10
 callback_mutex = threading.Semaphore(value=1)
+
+
+
+

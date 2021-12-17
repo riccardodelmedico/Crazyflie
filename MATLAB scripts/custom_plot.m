@@ -1,21 +1,21 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20211209_150516.txt";
+name = "crazyfun__20211215_101123.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
 internal = fullfile(path, '..\internal_data\', name);
-setpoints = fullfile(path, '..\setpoint_data\', name);
+% setpoints = fullfile(path, '..\setpoint_data\', name);
 vicon = fullfile(path, '..\vicon_data\', name); % TODO: redundant?
 wand = fullfile(path, '..\wand_data\', name);
 
 delimiterIn = ' ';
 headerlinesIn = 1;
 raw_internal_data = importdata(internal,delimiterIn,headerlinesIn);
-raw_set_data = importdata(setpoints,delimiterIn,headerlinesIn);
+% raw_set_data = importdata(setpoints,delimiterIn,headerlinesIn);
 raw_vicon_data = importdata(vicon,delimiterIn,headerlinesIn); % TODO: redundant?
-raw_wand = importdata(wand,delimiterIn,headerlinesIn);
+% raw_wand = importdata(wand,delimiterIn,headerlinesIn);
 
 if isstruct(raw_internal_data)
     internal_data = raw_internal_data.data;
@@ -23,11 +23,11 @@ else
     internal_data = raw_internal_data;
 end
 
-if isstruct(raw_set_data)
-    set_data = raw_set_data.data;
-else
-    set_data = raw_set_data;
-end
+% if isstruct(raw_set_data)
+%     set_data = raw_set_data.data;
+% else
+%     set_data = raw_set_data;
+% end
 
 if isstruct(raw_vicon_data)
     vicon_data = raw_vicon_data.data;
@@ -35,11 +35,11 @@ else
     vicon_data = raw_vicon_data;
 end
 
-if isstruct(raw_wand)
-    wand_data = raw_wand.data;
-else
-    wand_data = raw_wand;
-end
+% if isstruct(raw_wand)
+%     wand_data = raw_wand.data;
+% else
+%     wand_data = raw_wand;
+% end
 clear wand vicon setpoints internal
 clear raw_set_data raw_vicon_data raw_wand raw_internal_data
 clear current_file delimiterIn headerlinesIn name path
@@ -55,10 +55,10 @@ drone_quatw = vicon_data(:,7);          % /
 cust_time = datetime(vicon_data(:,end), 'ConvertFrom', 'datenum');
 
 
-setx_v = set_data(:,1);                 % \
-sety_v = set_data(:,2);                 %  |-> setpoint coordinates in Vicon reference system
-setz_v = set_data(:,3);                 % /
-set_time = datetime(set_data(:,end), 'ConvertFrom', 'datenum');
+% setx_v = set_data(:,1);                 % \
+% sety_v = set_data(:,2);                 %  |-> setpoint coordinates in Vicon reference system
+% setz_v = set_data(:,3);                 % /
+% set_time = datetime(set_data(:,end), 'ConvertFrom', 'datenum');
 
 int_px = internal_data(:,1);            % \
 int_py = internal_data(:,2);            %  |-> internal estimate of drone position
@@ -67,14 +67,11 @@ int_roll = internal_data(:,4);          % \
 int_pitch = -internal_data(:,5);         % |-> internal estimate of drone attitude
 int_yaw = internal_data(:,6);           % /
 int_time = datetime(internal_data(:,end), 'ConvertFrom', 'datenum');
-
-int_int_px = interp1(int_time, int_px, int_time);
-%int_drone_posx = interp1(cust_time, drone_posx, new_time);
-
-wand_px = wand_data(:,1);               % \
-wand_py = wand_data(:,2);               %  |-> Wand position in Vicon frame
-wand_pz = wand_data(:,3);               % /
-wand_time = datetime(wand_data(:,end), 'ConvertFrom', 'datenum');
+% 
+% wand_px = wand_data(:,1);               % \
+% wand_py = wand_data(:,2);               %  |-> Wand position in Vicon frame
+% wand_pz = wand_data(:,3);               % /
+% wand_time = datetime(wand_data(:,end), 'ConvertFrom', 'datenum');
 
 clear wand_data set_data vicon_data internal_data
 %% Analysis
