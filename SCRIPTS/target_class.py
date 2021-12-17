@@ -5,9 +5,46 @@ import time
 
 import numpy as np
 import matplotlib.pyplot as plt
-from own_module import crazyfun as crazy, script_setup as sc_s, \
-    script_variables as sc_v
-from vicon_dssdk import ViconDataStream
+#from own_module import crazyfun as crazy, script_setup as sc_s, \
+    #script_variables as sc_v
+#from vicon_dssdk import ViconDataStream
+run=True
+def repeat_fun(period, func, *args):
+    """
+    Uses an internal generator function to run another function
+    at a set interval of time.
+
+    :param period: Period at which repeat the execution of func.
+    :type period: integer
+    :param func: Function to execute.
+    :type func: callable
+    :param args: Arguments to pass to func.
+    :type args: any
+    :return: None.
+    :rtype: None
+    """
+
+
+    def time_tick():
+        """
+        Generator function that scan the passing of the desired period of time.
+
+        :return: Yields the passed time.
+        :rtype: iterator
+        """
+        t = time.time()
+        while True:
+            t += period
+            yield max(t - time.time(), 0)
+
+    # Initiates the generator function
+    tick = time_tick()
+
+    # Uses a global flag to stop the execution
+    while run:
+        time.sleep(next(tick))
+        func(*args)
+
 
 target_pos = np.array([0.0, 0.0, 0.0])
 def update_virtual_target(obj_target,dt=0.05):
@@ -16,7 +53,7 @@ def update_virtual_target(obj_target,dt=0.05):
         obj_target.p += obj_target.v * dt + obj_target.omega_vers_hat.dot(obj_target.v/np.linalg.norm(obj_target.v,2))*obj_target.a* dt * dt /2
         obj_target.v += obj_target.omega_vers_hat.dot(obj_target.v/np.linalg.norm(obj_target.v,2))*obj_target.a* dt
     obj_target.list_pos = np.concatenate((obj_target.list_pos,obj_target.p.reshape((1,3))),axis=0)
-    if not crazy.run:
+    if not run:
         print('esecuzioni extra non dovute')
     obj_target.mutex.release()
 
@@ -30,38 +67,43 @@ class target():
         self.a = initial_acceleration_module
         self.list_pos = initial_position.reshape((1,3))
         self.omega_vers_hat = np.array([[0,-1,0],[1,0,0],[0,0,0]])
-        self.update_thread = threading.Thread(target= crazy.repeat_fun,args=(dt,update_virtual_target, self, dt) )
+        self.update_thread = threading.Thread(target= repeat_fun,args=(dt,update_virtual_target, self, dt) )
         self.mutex = threading.Semaphore(1)
     def get_target(self):
         self.mutex.acquire(True)
-        ret = (self.s,self.v)
-        self.mutex.release(1)
+        ret = (self.p,self.v)
+        self.mutex.release()
         return ret
     def start(self):
-        crazy.run=True
+        global run
+        print('avvio il thread')
+        run=True
         #self.update_thread.daemon=True
         self.update_thread.start()
     def stop(self):
-        crazy.run=False
+        global run
+        print('fermo il thread')
+        run = False
         self.update_thread.join()
-        crazy.run=True
+        #crazy.run=True
 
-        plt.figure(1)
-        plt.plot(self.list_pos[0,0],self.list_pos[0,1],'o')
-        plt.plot(self.list_pos[:,0],self.list_pos[:,1],'-')
-        plt.plot(self.list_pos[-1,0],self.list_pos[-1,1],'->')
-        plt.show()
+        #plt.figure(1)
+        #plt.plot(self.list_pos[0,0],self.list_pos[0,1],'o')
+        #plt.plot(self.list_pos[:,0],self.list_pos[:,1],'-')
+        #plt.plot(self.list_pos[-1,0],self.list_pos[-1,1],'->')
+        #plt.show()
         """
         Logs the Target position to a file.
 
         :return: None.
         :rtype: None
         """
-a = target(initial_velocity=np.array([1.0,0.0,0.0]),initial_acceleration_module=1.0,dt= 0.001)
-a.start()
-time.sleep(6.28)
-a.stop()
-print('Dovrei avre finito ')
+#a = target(initial_velocity=np.array([1.0,0.0,0.0]),initial_acceleration_module=1.0,dt= 0.001)
+#a.start()
+
+#time.sleep(6.28)
+#a.stop()
+#print('Dovrei avre finito ')
 
     #     # Get a new frame from Vicon
     #     try:

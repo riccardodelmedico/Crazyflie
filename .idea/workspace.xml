@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3656d8c7-3246-445d-b28b-345bf7e62a00" name="Default Changelist" comment="Prima versione del codice modificato.">
-      <change afterPath="$PROJECT_DIR$/SCRIPTS/guidance_class.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SCRIPTS/target_class.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SCRIPTS/thrust_control.py" afterDir="false" />
+    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Aggiunta Libreria di Vollaro &amp;Co e gli script usati">
+      <change afterPath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MATLAB scripts/custom_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/custom_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MATLAB scripts/custom_plot_vel.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/custom_plot_vel.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MATLAB scripts/error_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/error_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MATLAB scripts/integrated_command_velocity.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/integrated_command_velocity.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/only_drones/hover_simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/only_drones/hover_simple.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/own_module/crazyfun.py" beforeDir="false" afterPath="$PROJECT_DIR$/own_module/crazyfun.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/own_module/script_variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/own_module/script_variables.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/guidance_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/guidance_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/target_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/target_class.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,7 +23,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="SET_USER_NAME_GLOBALLY" value="false" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
@@ -39,27 +33,21 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="ProjectId" id="20loQLKScJ6wAtE1f50zvhOtAqC" />
+  <component name="ProjectId" id="208ZaELd1Y51a8IbSknLEWHS2UW" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ChangesTree.GroupingKeys" value="" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/own_module" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Vicon-PC\Desktop\PROGETTO CRAZYFLIE\Progetto_Cioni_DM_Gazz\own_module" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Vicon-PC\Desktop\PROGETTO CRAZYFLIE\Progetto_Cioni_DM_Gazz\SCRIPTS" />
-    </key>
-  </component>
-  <component name="RunManager" selected="Python.velocity_estimation">
-    <configuration name="crazyfun" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.True_Guidance_Class">
+    <configuration name="True_Guidance_Class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Progetto_Cioni_DM_Gazz" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -67,11 +55,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/own_module" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/own_module/crazyfun.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -80,22 +68,22 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="hover_simple" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="guidance_class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Progetto_Cioni_DM_Gazz" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS/only_drones" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="SDK_HOME" value="$USER_HOME$/PycharmProjects/Command_Interface/venv/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/only_drones/hover_simple.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/guidance_class.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="EMULATE_TERMINAL" value="true" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
@@ -122,75 +110,45 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="velocity_estimation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Progetto_Cioni_DM_Gazz" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="wand_thread_onpos" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Progetto_Cioni_DM_Gazz" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/wand_thread_onpos.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.velocity_estimation" />
+        <item itemvalue="Python.True_Guidance_Class" />
+        <item itemvalue="Python.guidance_class" />
         <item itemvalue="Python.target_class" />
-        <item itemvalue="Python.hover_simple" />
-        <item itemvalue="Python.crazyfun" />
-        <item itemvalue="Python.wand_thread_onpos" />
       </list>
     </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="3656d8c7-3246-445d-b28b-345bf7e62a00" name="Default Changelist" comment="" />
-      <created>1636628518454</created>
+      <changelist id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="" />
+      <created>1635428236646</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1636628518454</updated>
+      <updated>1635428236646</updated>
     </task>
-    <task id="LOCAL-00001" summary="Prima versione del codice modificato.">
-      <created>1639155910224</created>
+    <task id="LOCAL-00001" summary="Aggiunta Libreria di Vollaro &amp;Co e gli script usati">
+      <created>1635428719846</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1639155910224</updated>
+      <updated>1635428719846</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Aggiunta Libreria di Vollaro &amp;Co e gli script usati">
+      <created>1635436086052</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1635436086052</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Aggiunta Libreria di Vollaro &amp;Co e gli script usati">
+      <created>1635436096855</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1635436096855</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -206,7 +164,7 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Prima versione del codice modificato." />
-    <option name="LAST_COMMIT_MESSAGE" value="Prima versione del codice modificato." />
+    <MESSAGE value="Aggiunta Libreria di Vollaro &amp;Co e gli script usati" />
+    <option name="LAST_COMMIT_MESSAGE" value="Aggiunta Libreria di Vollaro &amp;Co e gli script usati" />
   </component>
 </project>
