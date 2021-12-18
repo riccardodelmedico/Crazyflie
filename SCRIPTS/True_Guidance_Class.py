@@ -17,19 +17,19 @@ def sim_guidance(pursuer,target,dt,N):
     # get the target position and velocity to calculate R Vc and \dot{Sigma}
     (t_pos,t_vel) = target.get_target()
     R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
-    if R < 1e-3 and pursuer.ka_boom == None:
-        pursuer.ka_boom = pursuer.time_line[-1] - pursuer.time_line[0]
-        print(f'interncettazione avvenuta al tempo { pursuer.ka_boom}')
+    pursuer.R = np.append(pursuer.R, np.array([R]))
+    pursuer.time_line = np.append(pursuer.time_line, time.time())
+    if R < 3e-3 and pursuer.ka_boom == None:
 
-    Vc = - ((t_vel[0]-pursuer.v[0])*(t_pos[0]-pursuer.p[0])+(t_vel[1]-pursuer.v[1])*(t_pos[1]-pursuer.p[1]))/R
+        pursuer.ka_boom = len(pursuer.R)
+        print(f"interncettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
+
+    Vc =  - ((t_vel[0]-pursuer.v[0])*(t_pos[0]-pursuer.p[0])+(t_vel[1]-pursuer.v[1])*(t_pos[1]-pursuer.p[1]))/R
     dotSigma = ((t_vel[1] - pursuer.v[1]) * (t_pos[0] - pursuer.p[0]) - (t_vel[0] - pursuer.v[0]) * (t_pos[1] - pursuer.p[1])) /( R * R )
 
     # append these values to numpy to plot at the end their behavior on time
     pursuer.dotSigma = np.append(pursuer.dotSigma,np.array([dotSigma]))
     pursuer.Vc = np.append(pursuer.Vc,np.array([Vc]))
-    pursuer.R = np.append(pursuer.R,np.array([R]))
-    pursuer.time_line = np.append(pursuer.time_line,time.time())
-
     #calculate PNG acceleration
     Ac = N * Vc * dotSigma
     if len(pursuer.time_line) <2:
@@ -84,10 +84,9 @@ class guidance():
     def plot_chase(self):
 
         if self.ka_boom != None:
-            end = np.where(self.time_line == self.ka_boom)[0][0]
-            print(end)
-            self.list_pos = self.list_pos[0:end,:]
-            self.target.list_pos = self.target.list_pos[0:end,:]
+
+            self.list_pos = self.list_pos[0:self.ka_boom,:]
+            self.target.list_pos = self.target.list_pos[0:self.ka_boom,:]
         plt.figure(1)
         plt.plot(self.list_pos[0,0],self.list_pos[0,1],'ro')
         plt.plot(self.list_pos[:,0], self.list_pos[:,1],'r-')
@@ -98,12 +97,11 @@ class guidance():
         plt.show()
     def plot_chase_info(self):
         if self.ka_boom != None:
-            end = np.where(self.time_line == self.ka_boom)[0][0]
-            print(end)
-            self.time_line = self.time_line[0:end]
-            self.R = self.R[0:end]
-            self.dotSigma = self.dotSigma[0:end]
-            self.Vc = self.Vc[0:end]
+
+            self.time_line = self.time_line[0:self.ka_boom]
+            self.R = self.R[0:self.ka_boom]
+            self.dotSigma = self.dotSigma[0:self.ka_boom]
+            self.Vc = self.Vc[0:self.ka_boom]
         plt.figure(1)
         plt.title('Derivative of Line of Sight')
         plt.plot(self.time_line, self.dotSigma[:], '-')
@@ -118,13 +116,13 @@ class guidance():
         plt.show()
         print(f'la distanza minima di intercettazione vale {np.min(self.R)}')
         dif_time = np.array([self.time_line[i]-self.time_line[i-1] for i in np.arange(1,len(self.time_line),1)])
-        print(np.min(dif_time))
-        print(np.mean(dif_time))
+        print(f'tempo minimo di esecuzione{np.min(dif_time)}')
+        print(f'tempo medio di esecuzione {np.mean(dif_time)}')
 
 
-a=tar_c.target(initial_position=np.array([5.0,5.0,0.5]),initial_velocity=np.array((1.0,1.0,0.0)),initial_acceleration_module=- 0.1,dt=0.002)
+a=tar_c.target(initial_position=np.array([0.0,5.0,0.5]),initial_velocity=np.array((0.0,1.0,0.0)),initial_acceleration_module=- 0.1,dt=0.002)
 
-pur=guidance(a,chase_vel=4,dt=0.002,N=4)
+pur=guidance(a,chase_vel=2,dt=0.002,N=4)
 
 pur.start()
 for i in range(1):

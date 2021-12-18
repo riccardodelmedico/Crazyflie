@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Correzione errore da patata trovato nel codice più un meno aggiuno al calcolo di Vc; aggiornati i ploot per essere un po più bellini, da migliorare">
+    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="aggiunto iil titolo ai plot, miglioranta l'integraione introducendo direttamente i tempi mediante la funzione time.time()">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SCRIPTS/target_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/target_class.py" afterDir="false" />
@@ -158,7 +158,14 @@
       <option name="project" value="LOCAL" />
       <updated>1639768249284</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="aggiunto iil titolo ai plot, miglioranta l'integraione introducendo direttamente i tempi mediante la funzione time.time()">
+      <created>1639835162116</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1639835162116</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -177,6 +184,7 @@
     <MESSAGE value="Aggiunta Libreria di Vollaro &amp;Co e gli script usati" />
     <MESSAGE value="Modifica guida e target per girare sui nostri PC, ma la guida non funziona" />
     <MESSAGE value="Correzione errore da patata trovato nel codice più un meno aggiuno al calcolo di Vc; aggiornati i ploot per essere un po più bellini, da migliorare" />
-    <option name="LAST_COMMIT_MESSAGE" value="Correzione errore da patata trovato nel codice più un meno aggiuno al calcolo di Vc; aggiornati i ploot per essere un po più bellini, da migliorare" />
+    <MESSAGE value="aggiunto iil titolo ai plot, miglioranta l'integraione introducendo direttamente i tempi mediante la funzione time.time()" />
+    <option name="LAST_COMMIT_MESSAGE" value="aggiunto iil titolo ai plot, miglioranta l'integraione introducendo direttamente i tempi mediante la funzione time.time()" />
   </component>
 </project>

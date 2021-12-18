@@ -46,22 +46,24 @@ def repeat_fun(period, func, *args):
         func(*args)
 
 
-target_pos = np.array([0.0, 0.0, 0.0])
+
 def update_virtual_target(obj_target,dt=0.05):
     # integrate velociticy and acceleration with forward euler
-    obj_target.mutex.acquire(True)
+
     obj_target.time_line = np.append(obj_target.time_line,np.array(time.time()))
     if len(obj_target.time_line) < 2:
         deltat = dt
     else:
         deltat = obj_target.time_line[-1] - obj_target.time_line[-2]
     if np.linalg.norm(obj_target.v,2) != 0:
+        obj_target.mutex.acquire(True)
         obj_target.p += obj_target.v * deltat + obj_target.omega_vers_hat.dot(obj_target.v/np.linalg.norm(obj_target.v,2))*obj_target.a* deltat * deltat /2
         obj_target.v += obj_target.omega_vers_hat.dot(obj_target.v/np.linalg.norm(obj_target.v,2))*obj_target.a* deltat
+        obj_target.mutex.release()
     obj_target.list_pos = np.concatenate((obj_target.list_pos,obj_target.p.reshape((1,3))),axis=0)
     if not run:
         print('esecuzioni extra non dovute')
-    obj_target.mutex.release()
+
 
 class target():
     def __init__(self, initial_position=np.array([0.0, 0.0, 0.5]),
@@ -136,11 +138,4 @@ class target():
     #     # target_matlab.write(target_pos[0],
     #     #                         target_pos[1],
     #     #                         target_pos[2])
-    #
-    # # def target_update(self):
-    # #     global target_pos
-    # #     dt = crazy.target_period
-    # #     p(k+1) = p(k) + v(k-1)*dt + a(k-1)*dt*dt
-    # #     v(k+1) = v(k) + a(k)*dt
-    #
-    # #     target_pos = np.array([self.p[0], self.p[1], self.p[2]])
+
