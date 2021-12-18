@@ -19,7 +19,7 @@ def sim_guidance(pursuer,target,dt,N):
     R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
-    if R < 3e-3 and pursuer.ka_boom == None:
+    if R < 2e-3 and pursuer.ka_boom == None:
 
         pursuer.ka_boom = len(pursuer.R)
         print(f"interncettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
@@ -80,6 +80,7 @@ class guidance():
         tar_c.run=False
         self.update_thread.join()
         self.target.stop()
+        print(len(self.target.list_pos))
         self.time_line-=self.time_line[0]
     def plot_chase(self):
 
@@ -120,14 +121,12 @@ class guidance():
         print(f'tempo medio di esecuzione {np.mean(dif_time)}')
 
 
-a=tar_c.target(initial_position=np.array([0.0,5.0,0.5]),initial_velocity=np.array((0.0,1.0,0.0)),initial_acceleration_module=- 0.1,dt=0.002)
+a=tar_c.target(initial_position=np.array([1.0,1.0,0.5]),initial_velocity=np.array([0.0,0.1,0.0]),dt=0.002)
 
 pur=guidance(a,chase_vel=2,dt=0.002,N=4)
 
 pur.start()
-for i in range(1):
-    time.sleep(30)
-    print('sono passati 30 s mdi simulazione')
+time.sleep(20)
 pur.stop()
 pur.plot_chase()
 pur.plot_chase_info()

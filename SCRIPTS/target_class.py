@@ -49,18 +49,19 @@ def repeat_fun(period, func, *args):
 
 def update_virtual_target(obj_target,dt=0.05):
     # integrate velociticy and acceleration with forward euler
-
+    obj_target.mutex.acquire(True)
     obj_target.time_line = np.append(obj_target.time_line,np.array(time.time()))
     if len(obj_target.time_line) < 2:
         deltat = dt
     else:
         deltat = obj_target.time_line[-1] - obj_target.time_line[-2]
     if np.linalg.norm(obj_target.v,2) != 0:
-        obj_target.mutex.acquire(True)
+
         obj_target.p += obj_target.v * deltat + obj_target.omega_vers_hat.dot(obj_target.v/np.linalg.norm(obj_target.v,2))*obj_target.a* deltat * deltat /2
         obj_target.v += obj_target.omega_vers_hat.dot(obj_target.v/np.linalg.norm(obj_target.v,2))*obj_target.a* deltat
-        obj_target.mutex.release()
+
     obj_target.list_pos = np.concatenate((obj_target.list_pos,obj_target.p.reshape((1,3))),axis=0)
+    obj_target.mutex.release()
     if not run:
         print('esecuzioni extra non dovute')
 
