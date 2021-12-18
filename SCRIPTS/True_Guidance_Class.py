@@ -32,11 +32,14 @@ def sim_guidance(pursuer,target,dt,N):
 
     #calculate PNG acceleration
     Ac = N * Vc * dotSigma
-
+    if len(pursuer.time_line) <2:
+        deltat=dt
+    else:
+        deltat = pursuer.time_line[-1] - pursuer.time_line[-2]
    #integrate velociticy and acceleration with forward euler
     if np.linalg.norm(pursuer.v,2) != 0:
-        pursuer.p += pursuer.v * dt + target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac * dt * dt /2
-        pursuer.v += target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac* dt
+        pursuer.p += pursuer.v * deltat + target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac * deltat * deltat /2
+        pursuer.v += target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac* deltat
     pursuer.list_pos = np.concatenate((pursuer.list_pos,pursuer.p.reshape((1,3))),axis=0)
 
     #interception condition
@@ -102,20 +105,31 @@ class guidance():
             self.dotSigma = self.dotSigma[0:end]
             self.Vc = self.Vc[0:end]
         plt.figure(1)
+        plt.title('Derivative of Line of Sight')
         plt.plot(self.time_line, self.dotSigma[:], '-')
         plt.show()
         plt.figure(2)
+        plt.title('Collision Velocity')
         plt.plot(self.time_line, self.Vc[:], '-')
         plt.show()
         plt.figure(3)
+        plt.title('Pursuer/Target Distance')
         plt.plot(self.time_line, self.R[:], '-')
         plt.show()
+        print(f'la distanza minima di intercettazione vale {np.min(self.R)}')
+        dif_time = np.array([self.time_line[i]-self.time_line[i-1] for i in np.arange(1,len(self.time_line),1)])
+        print(np.min(dif_time))
+        print(np.mean(dif_time))
 
 
-a=tar_c.target(initial_position=np.array([2.0,2.0,0.5]),initial_velocity=np.array((0.1,0.1,0.0)),dt=0.005)
-pur=guidance(a,chase_vel=0.5,dt=0.005,N=4)
+a=tar_c.target(initial_position=np.array([5.0,5.0,0.5]),initial_velocity=np.array((1.0,1.0,0.0)),initial_acceleration_module=- 0.1,dt=0.002)
+
+pur=guidance(a,chase_vel=4,dt=0.002,N=4)
+
 pur.start()
-time.sleep(10)
+for i in range(1):
+    time.sleep(30)
+    print('sono passati 30 s mdi simulazione')
 pur.stop()
 pur.plot_chase()
 pur.plot_chase_info()
