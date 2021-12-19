@@ -1,3 +1,4 @@
 /experiment_logs/
 /old_datalog/
-.idea/
+/.idea/
+/.idea/workspace.xml
