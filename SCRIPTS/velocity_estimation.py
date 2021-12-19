@@ -25,6 +25,7 @@ sequence = [
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
+    commander = Drone_Commander(scf)
     scf.cf.param.set_value('stabilizer.estimator', 2)  # set KF as estimator
     # scf.cf.param.set_value('stabilizer.controller', 1)
     scf.cf.param.set_value('commander.enHighLevel', '1')
