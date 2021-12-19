@@ -4,8 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="aggiunta DroneManager per l'implementazione della guida">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Definizione guide simulate e creazione dei file per lal guida su drone">
+      <change afterPath="$PROJECT_DIR$/SCRIPTS/DroneGuidance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/Drone_Guidance.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +51,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.DroneManager">
+  <component name="RunManager" selected="Python.True_Guidance_Class">
     <configuration name="DroneManager" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Progetto_Cioni_DM_Gazz" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -199,14 +203,7 @@
       <option name="project" value="LOCAL" />
       <updated>1639841385744</updated>
     </task>
-    <task id="LOCAL-00008" summary="aggiunta DroneManager per l'implementazione della guida">
-      <created>1639912264991</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1639912264991</updated>
-    </task>
-    <option name="localTasksCounter" value="9" />
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -219,6 +216,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Aggiunta Libreria di Vollaro &amp;Co e gli script usati" />
@@ -226,7 +224,6 @@
     <MESSAGE value="Correzione errore da patata trovato nel codice più un meno aggiuno al calcolo di Vc; aggiornati i ploot per essere un po più bellini, da migliorare" />
     <MESSAGE value="aggiunto iil titolo ai plot, miglioranta l'integraione introducendo direttamente i tempi mediante la funzione time.time()" />
     <MESSAGE value="aggiornamento della classe target con modifiche finali + debug simulatore di guida PNG" />
-    <MESSAGE value="aggiunta DroneManager per l'implementazione della guida" />
-    <option name="LAST_COMMIT_MESSAGE" value="aggiunta DroneManager per l'implementazione della guida" />
+    <option name="LAST_COMMIT_MESSAGE" value="aggiornamento della classe target con modifiche finali + debug simulatore di guida PNG" />
   </component>
 </project>
