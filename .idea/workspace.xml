@@ -4,13 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Definizione guide simulate e creazione dei file per lal guida su drone">
-      <change beforePath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Codice della guida adattato al laboratorio. &#10;Creata branch per eventuali simulazioni da casa">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MATLAB scripts/custom_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/custom_plot.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MATLAB scripts/custom_plot_vel.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/custom_plot_vel.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/DroneGuidance.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/DroneGuidance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/DroneManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/DroneManager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/guidance_class.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/target_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/target_class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/own_module/crazyfun.py" beforeDir="false" afterPath="$PROJECT_DIR$/own_module/crazyfun.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/own_module/script_variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/own_module/script_variables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,7 +55,49 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.True_Guidance_Class">
+  <component name="RunManager" selected="Python.DroneGuidance">
+    <configuration name="DroneGuidance" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Progetto_Cioni_DM_Gazz" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/DroneGuidance.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="DroneManager (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Progetto_Cioni_DM_Gazz" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/DroneManager.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="DroneManager" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Progetto_Cioni_DM_Gazz" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -95,28 +140,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="guidance_class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Progetto_Cioni_DM_Gazz" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="$USER_HOME$/PycharmProjects/Command_Interface/venv/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SCRIPTS" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/guidance_class.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="true" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="target_class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="velocity_estimation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Progetto_Cioni_DM_Gazz" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -128,7 +152,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/target_class.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -139,10 +163,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.DroneGuidance" />
+        <item itemvalue="Python.DroneManager (1)" />
         <item itemvalue="Python.True_Guidance_Class" />
+        <item itemvalue="Python.velocity_estimation" />
         <item itemvalue="Python.DroneManager" />
-        <item itemvalue="Python.guidance_class" />
-        <item itemvalue="Python.target_class" />
       </list>
     </recent_temporary>
   </component>
@@ -204,7 +229,14 @@
       <option name="project" value="LOCAL" />
       <updated>1639841385744</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Codice della guida adattato al laboratorio. &#10;Creata branch per eventuali simulazioni da casa">
+      <created>1639997084219</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1639997084219</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -225,6 +257,7 @@
     <MESSAGE value="Correzione errore da patata trovato nel codice più un meno aggiuno al calcolo di Vc; aggiornati i ploot per essere un po più bellini, da migliorare" />
     <MESSAGE value="aggiunto iil titolo ai plot, miglioranta l'integraione introducendo direttamente i tempi mediante la funzione time.time()" />
     <MESSAGE value="aggiornamento della classe target con modifiche finali + debug simulatore di guida PNG" />
-    <option name="LAST_COMMIT_MESSAGE" value="aggiornamento della classe target con modifiche finali + debug simulatore di guida PNG" />
+    <MESSAGE value="Codice della guida adattato al laboratorio. &#10;Creata branch per eventuali simulazioni da casa" />
+    <option name="LAST_COMMIT_MESSAGE" value="Codice della guida adattato al laboratorio. &#10;Creata branch per eventuali simulazioni da casa" />
   </component>
 </project>

@@ -3,7 +3,7 @@ import numpy as np
 # Vicon connection settings
 VICON_IP = "192.168.10.2"  # Set the IP of the Vicon server to connect to
 VICON_PORT = "801"  # Set the port of the Vicon server to connect to
-drone = "Crazyflie"  # Set the "Vicon name" of the object linked to the drone
+drone = "CF_v1"#Crazyflie"  # Set the "Vicon name" of the object linked to the drone
 
 # Set the "Vicon-name" of the Wand
 Wand = "Active Wand v2 (Origin Tracking)"
@@ -31,3 +31,4 @@ wand_trans = np.array([0.0, 0.0, 0.0])
 vicon_vel = np.array([0.0, 0.0, 0.0])
 vel_estimate = np.array([0.0, 0.0, 0.0])
 pos_estimate = np.array([0.0, 0.0, 0.0])
+

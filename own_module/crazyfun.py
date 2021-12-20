@@ -327,7 +327,7 @@ def pose_sending(sync_cf):
     #                                sc_v.drone_or[2], sc_v.drone_or[3])
 
     sync_cf.cf.extpos.send_extpos(sc_v.drone_pos[0], sc_v.drone_pos[1],
-                                   sc_v.drone_pos[2])
+                                  sc_v.drone_pos[2])
     # logging.debug("sent pose: %s %s",
     #               str(sc_v.drone_pos), str(sc_v.drone_or))
 

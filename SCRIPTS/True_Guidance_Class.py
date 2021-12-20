@@ -14,7 +14,7 @@ def sim_guidance(pursuer, target, dt, N):
     R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
-    if R < 1e-2 and pursuer.ka_boom == None:
+    if R < 3e-2 and pursuer.ka_boom == None:
 
         pursuer.ka_boom = len(pursuer.R)
         print(f"intercettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
@@ -79,9 +79,19 @@ class guidance():
 
     def plot_chase(self):
         if self.ka_boom != None:
-
-            self.list_pos = self.list_pos[0:self.ka_boom,:]
-            self.target.list_pos = self.target.list_pos[0:self.ka_boom,:]
+            self.target.time_line-=self.target.time_line[0]
+            #print(self.target.time_line)
+            stop = self.time_line[self.ka_boom]
+            #print(self.time_line[self.ka_boom])
+            len_of_time=np.where(self.target.time_line<= self.time_line[self.ka_boom],self.target.time_line,0)
+            i=0
+            #print(len_of_time)
+            for j in range(len(len_of_time)):
+                if len_of_time[j]!=0:
+                    i+=1
+            #print(f'la i vale{i}')
+            self.list_pos = self.list_pos[0:self.ka_boom, :]
+            self.target.list_pos = self.target.list_pos[0:i, :]
         plt.figure(1)
         plt.plot(self.list_pos[0,0],self.list_pos[0,1],'ro')
         plt.plot(self.list_pos[:,0], self.list_pos[:,1],'r-')
@@ -116,12 +126,12 @@ class guidance():
         print(f'tempo medio di esecuzione {np.mean(dif_time)}')
 
 
-a = tar_c.target(initial_position=np.array([1.0,1.0,0.5]),initial_velocity=np.array([0.0,0.1,0.0]),dt=0.001)
+a = tar_c.target(initial_position=np.array([0.0,0.0,0.5]),initial_velocity=np.array([0.2,0.5,0.0]),initial_acceleration_module= 0.5 ,dt=0.001)
 
-pur=guidance(a,chase_vel=2,dt=0.001,N=4)
+pur = guidance(a, chase_vel=0.8, dt=0.05, N=4, inital_pose=np.array([-0.5, -1, 0.5, math.pi/2]))
 
 pur.start()
-time.sleep(20)
+time.sleep(10)
 pur.stop()
 pur.plot_chase()
 pur.plot_chase_info()

@@ -25,7 +25,6 @@ sequence = [
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
-    commander = Drone_Commander(scf)
     scf.cf.param.set_value('stabilizer.estimator', 2)  # set KF as estimator
     # scf.cf.param.set_value('stabilizer.controller', 1)
     scf.cf.param.set_value('commander.enHighLevel', '1')
@@ -152,7 +151,7 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
         #time.sleep(1)
         for k in range(10):
-            scf.cf.commander.send_position_setpoint(0.0, 0.0, 1.0, 0.0)
+            scf.cf.commander.send_position_setpoint(0.0, 0.0, 0.5, 0.0)
             time.sleep(0.5)
         plot = True
         # for i in range(1):
