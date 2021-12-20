@@ -3,26 +3,21 @@ import math
 import threading
 import time
 import numpy as np
-
-import target_class as tg
-from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
-# from cflib.positioning.motion_commander import MotionCommander
-from cflib.positioning.position_hl_commander import PositionHlCommander
-#from own_module import crazyfun as crazy, script_setup as sc_s, \
-  #  script_variables as sc_v
-#from vicon_dssdk import ViconDataStream
+from own_module import crazyfun as crazy
 import target_class as tar_c
 import matplotlib.pyplot as plt
-def sim_guidance(pursuer,target,dt,N):
+
+
+def sim_guidance(pursuer, target, dt, N):
     # get the target position and velocity to calculate R Vc and \dot{Sigma}
-    (t_pos,t_vel) = target.get_target()
+    (t_pos, t_vel) = target.get_target()
     R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
-    if R < 2e-3 and pursuer.ka_boom == None:
+    if R < 1e-2 and pursuer.ka_boom == None:
 
         pursuer.ka_boom = len(pursuer.R)
-        print(f"interncettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
+        print(f"intercettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
 
     Vc =  - ((t_vel[0]-pursuer.v[0])*(t_pos[0]-pursuer.p[0])+(t_vel[1]-pursuer.v[1])*(t_pos[1]-pursuer.p[1]))/R
     dotSigma = ((t_vel[1] - pursuer.v[1]) * (t_pos[0] - pursuer.p[0]) - (t_vel[0] - pursuer.v[0]) * (t_pos[1] - pursuer.p[1])) /( R * R )
@@ -45,9 +40,6 @@ def sim_guidance(pursuer,target,dt,N):
     #interception condition
 
 
-
-
-
 class guidance():
     def __init__(self,target,inital_pose=np.array([0.0,0.0,0.5,math.pi/2]),chase_vel=0.2,N=3,Simulation_Guidance=True, dt=0.05):
         if Simulation_Guidance:
@@ -59,7 +51,7 @@ class guidance():
 
             #list of element for plot
             self.list_pos = self.p.reshape((1,3))
-            self.update_thread = threading.Thread(target= tar_c.repeat_fun, args = (dt,sim_guidance,self,target,dt,N))
+            self.update_thread = threading.Thread(target= crazy.repeat_fun, args = (dt,sim_guidance,self,target,dt,N))
             self.dotSigma = np.array([])
             self.Vc = np.array([])
             self.R = np.array([])
@@ -72,18 +64,20 @@ class guidance():
             self.chase_vel = chase_vel
         self.target = target
         self.N = N
+
     def start(self):
-        tar_c.run=True
+        crazy.run = True
         self.update_thread.start()
         self.target.start()
+
     def stop(self):
-        tar_c.run=False
+        crazy.run = False
         self.update_thread.join()
         self.target.stop()
         print(len(self.target.list_pos))
         self.time_line-=self.time_line[0]
-    def plot_chase(self):
 
+    def plot_chase(self):
         if self.ka_boom != None:
 
             self.list_pos = self.list_pos[0:self.ka_boom,:]
@@ -96,6 +90,7 @@ class guidance():
         plt.plot(self.target.list_pos[:, 0], self.target.list_pos[:, 1], 'g-')
         plt.plot(self.target.list_pos[-1, 0], self.target.list_pos[-1, 1], 'g->')
         plt.show()
+
     def plot_chase_info(self):
         if self.ka_boom != None:
 
@@ -121,9 +116,9 @@ class guidance():
         print(f'tempo medio di esecuzione {np.mean(dif_time)}')
 
 
-a=tar_c.target(initial_position=np.array([1.0,1.0,0.5]),initial_velocity=np.array([0.0,0.1,0.0]),dt=0.002)
+a = tar_c.target(initial_position=np.array([1.0,1.0,0.5]),initial_velocity=np.array([0.0,0.1,0.0]),dt=0.001)
 
-pur=guidance(a,chase_vel=2,dt=0.002,N=4)
+pur=guidance(a,chase_vel=2,dt=0.001,N=4)
 
 pur.start()
 time.sleep(20)

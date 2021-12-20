@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Definizione guide simulate e creazione dei file per lal guida su drone">
-      <change afterPath="$PROJECT_DIR$/SCRIPTS/DroneGuidance.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Progetto_Cioni_DM_Gazz.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/Drone_Guidance.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/guidance_class.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCRIPTS/target_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/target_class.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,8 +139,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.DroneManager" />
         <item itemvalue="Python.True_Guidance_Class" />
+        <item itemvalue="Python.DroneManager" />
         <item itemvalue="Python.guidance_class" />
         <item itemvalue="Python.target_class" />
       </list>
