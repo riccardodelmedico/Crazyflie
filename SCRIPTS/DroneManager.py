@@ -30,6 +30,7 @@ class DroneManager:
         self.position = np.array([])
         self.velocity = np.array([])
         self.flying =False
+        self.yaw = 0.0
         self.box = box
         self.vicon_thread = threading.Thread(target=crazy.repeat_fun,
                                              args=(crazy.vicon2drone_period,
@@ -83,8 +84,14 @@ class DroneManager:
                                                          i,
                                                          math.degrees(self.initial_orientation[2]))
             time.sleep(0.2)
-
-        for i in range(30):
+        for j in np.arange(math.degrees(self.initial_orientation[2]),yaw,-20):
+            for i in range(2):
+                self.scf.cf.commander.send_position_setpoint(self.position[0],
+                                                             self.position[1],
+                                                             sc_v.DEFAULT_HEIGHT,
+                                                             j)
+                time.sleep(0.1)
+        for i in range(10):
             self.scf.cf.commander.send_position_setpoint(self.position[0],
                                                          self.position[1],
                                                          sc_v.DEFAULT_HEIGHT,
@@ -96,7 +103,6 @@ class DroneManager:
                                                       0.0,
                                                       sc_v.DEFAULT_HEIGHT)
 
-
         self.get_state()
         print(f'Guidance Velocity reached. Pos:{self.position}')
 
@@ -104,6 +110,7 @@ class DroneManager:
         crazy.callback_mutex.acquire(blocking=True)
         self.position = sc_v.pos_estimate[0:2]
         self.velocity = sc_v.vel_estimate[0:2]
+        self.yaw = sc_v.vel_estimate[2]
         crazy.callback_mutex.release()
 
     def check_virtual_box(self):
@@ -133,12 +140,11 @@ class DroneManager:
     def landing(self):
         self.flying = False
         for i in np.arange(0.5, -0.11, -0.1):
-            for j in range(2):
-
-                self.scf.cf.commander.send_position_setpoint(self.position[0],
-                                                             self.position[1],
-                                                             i, 0.0)
-                time.sleep(0.2)
+            self.get_state()
+            self.scf.cf.commander.send_position_setpoint(self.position[0],
+                                                         self.position[1],
+                                                         i, self.yaw)
+            time.sleep(0.2)
         crazy.run = False
 
     # def stop(self):

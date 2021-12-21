@@ -2,7 +2,7 @@ clear; close all; clc
 command_flag = 1;
 
 %% File loading
-name = "crazyfun__20211220_145133.txt";
+name = "crazyfun__20211221_093115.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 

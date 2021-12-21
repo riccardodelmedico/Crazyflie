@@ -150,9 +150,9 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
         #         time.sleep(0.5)
 
         #time.sleep(1)
-        for k in range(10):
+        for k in range(20):
             scf.cf.commander.send_position_setpoint(0.0, 0.0, 0.5, 0.0)
-            time.sleep(0.5)
+            time.sleep(0.1)
         plot = True
         # for i in range(1):
         #     for j in np.arange(0.0, 6.28, 0.05):

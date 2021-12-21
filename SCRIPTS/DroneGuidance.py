@@ -15,41 +15,58 @@ import target_class as tar_c
 import matplotlib.pyplot as plt
 
 
-def drone_guidance(pursuer,dt,N):
+def drone_guidance(pursuer, dt, N):
     # get the target position and velocity to calculate R Vc and \dot{Sigma}
-    (t_pos,t_vel) = pursuer.target.get_target()
+    (t_pos, t_vel) = pursuer.target.get_target()
     pursuer.drone.get_state()
-    R = np.linalg.norm(t_pos[0:2]-pursuer.drone.position[0:2],2)
+    cos_yaw = math.cos(math.radians(pursuer.drone.yaw))
+    sin_yaw = math.sin(math.radians(pursuer.drone.yaw))
+    rot_yaw = np.array([[cos_yaw,-sin_yaw],[sin_yaw,cos_yaw]])
+
+    pursuer.drone.velocity = rot_yaw.dot(pursuer.drone.velocity)
+    R = np.linalg.norm(t_pos[0:2]-pursuer.drone.position[0:2], 2)
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
-    if R < 5e-2 and pursuer.ka_boom == None:
+    if R < 3e-2 and pursuer.ka_boom == None:
 
         # salva ka_boom come true guidance
         pursuer.ka_boom = len(pursuer.R)
+        print(pursuer.ka_boom, len(pursuer.time_line))
         print(
             f"intercettazione avvenuta al tempo {pursuer.time_line[pursuer.ka_boom - 1] - pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}")
         pursuer.drone.landing()
-
+    sigma = math.atan2(t_pos[1] - pursuer.drone.position[1],t_pos[0] - pursuer.drone.position[0])
     Vc = - ((t_vel[0]-pursuer.drone.velocity[0])*(t_pos[0]-pursuer.drone.position[0])+(t_vel[1]-pursuer.drone.velocity[1])*(t_pos[1]-pursuer.drone.position[1]))/R
     dotSigma = ((t_vel[1] - pursuer.drone.velocity[1]) * (t_pos[0] - pursuer.drone.position[0]) - (t_vel[0] - pursuer.drone.velocity[0]) * (t_pos[1] - pursuer.drone.position[1])) /( R * R )
 
     # append these values to numpy to plot at the end their behavior on time
-    pursuer.dotSigma = np.append(pursuer.dotSigma,np.array([dotSigma]))
-    pursuer.Vc = np.append(pursuer.Vc,np.array([Vc]))
+    pursuer.dotSigma = np.append(pursuer.dotSigma, np.array([dotSigma]))
+    pursuer.Vc = np.append(pursuer.Vc, np.array([Vc]))
+    N_tv = N/math.cos(sigma - math.radians(pursuer.drone.yaw))
     #calculate PNG acceleration
-    Ac = N * Vc * dotSigma
-    omega = math.degrees(Ac/np.linalg.norm(pursuer.drone.velocity[0:2],2))
+    Ac = N_tv * Vc * dotSigma
+    omega = - math.degrees(Ac/np.linalg.norm(pursuer.drone.velocity[0:2], 2))
+    # omega saturation
+    if omega > 90:
+        omega = 90
+    elif omega < -90:
+        omega = -90
     #print(f'la velocità angolare vale {omega}, ')
-    pursuer.send_command(pursuer.v[0],0.0,omega)
-    #pursuer.list_pos = np.concatenate((pursuer.list_pos,pursuer.drone.position.reshape((1,2))),axis=0)
+    pursuer.send_command(np.linalg.norm(pursuer.v, 2), 0.0, omega, dt=dt)
+    # if pursuer.list_pos[0] == -100.0:
+    #     pursuer.list_pos = pursuer.drone.position.reshape((1,2))
+    # else:
+    pursuer.list_pos = np.concatenate((pursuer.list_pos,pursuer.drone.position.reshape((1,2))),axis=0)
 
  #interception condition
 
+
 class DroneGuidance:
-    def __init__(self,target,droneM,initial_velocity=np.array([0.1,0.0,0.0]),dt= 0.05,N=3):
+    def __init__(self,target,droneM,initial_velocity=np.array([0.1,0.0,0.0]),dt=0.05,N=3):
         self.ka_boom = None
-        self.update_thread=threading.Thread(target= crazy.repeat_fun,args= (dt,drone_guidance,self,dt,N))
-        self.list_pos = np.array([])
+        self.update_thread=threading.Thread(target=crazy.repeat_fun,
+                                            args=(dt, drone_guidance, self, dt, N))
+        self.list_pos = np.array([-100.0,-100.0]).reshape((1,2))
         self.p = np.array([])
         self.v = initial_velocity
         self.drone = droneM
@@ -59,9 +76,8 @@ class DroneGuidance:
         self.dotSigma = np.array([])
         self.time_line = np.array([])
 
-
-    def start(self,vx,vy):
-        self.drone.start(vx,vy)
+    def start(self, vx, vy):
+        self.drone.start(vx, vy)
         #take off deve eseguire finche non rispetta le condizioni di lancio
         #della guida, quindi V circa self.v ed il drone si trova dentro la box
         print('Start Guidance')
@@ -74,17 +90,22 @@ class DroneGuidance:
        self.update_thread.join()
        self.target.update_thread.join()
 
-    def send_command(self, vx, vy, omega):
-        self.drone.send_command(vx, vy, omega)
+    def send_command(self, vx, vy, omega, dt= 0.05):
+        self.drone.send_command(vx, vy, omega,dt)
 
     def plot_chase(self):
+        self.list_pos = self.list_pos[1:-1,:]
+        self.time_line-=self.time_line[0]
+        # print(f' il kaboom {self.ka_boom}, mentre la lunghezza vale {len(self.time_line)}')
         if self.ka_boom != None:
+
             self.target.time_line-=self.target.time_line[0]
             #print(self.target.time_line)
-            stop = self.time_line[self.ka_boom]
-            #print(self.time_line[self.ka_boom])
-            len_of_time=np.where(self.target.time_line<= self.time_line[self.ka_boom],self.target.time_line,0)
-            i=0
+            # self.ka_boom-=1
+            # print(f' momento di collisione :{self.time_line[self.ka_boom]} e distanza di collisione{self.R[self.ka_boom]}')
+            # print(self.time_line[self.ka_boom ])
+            len_of_time = np.where(self.target.time_line<= self.time_line[self.ka_boom -1],self.target.time_line,0)
+            i = 0
             #print(len_of_time)
             for j in range(len(len_of_time)):
                 if len_of_time[j]!=0:
@@ -101,13 +122,46 @@ class DroneGuidance:
         plt.plot(self.target.list_pos[-1, 0], self.target.list_pos[-1, 1], 'g->')
         plt.show()
 
+    def plot_chase_info(self):
+        if self.ka_boom != None:
+
+            self.time_line = self.time_line[0:self.ka_boom]
+            self.R = self.R[0:self.ka_boom]
+            self.dotSigma = self.dotSigma[0:self.ka_boom]
+            self.Vc = self.Vc[0:self.ka_boom]
+        plt.figure(1)
+        plt.title('Derivative of Line of Sight')
+        plt.plot(self.time_line, self.dotSigma[:], '-')
+        plt.show()
+        plt.figure(2)
+        plt.title('Collision Velocity')
+        plt.plot(self.time_line, self.Vc[:], '-')
+        plt.show()
+        plt.figure(3)
+        plt.title('Pursuer/Target Distance')
+        plt.plot(self.time_line, self.R[:], '-')
+        plt.show()
+        print(f'la distanza minima di intercettazione vale {np.min(self.R)}')
+        dif_time = np.array([self.time_line[i]-self.time_line[i-1] for i in np.arange(1,len(self.time_line),1)])
+        print(f'tempo minimo di esecuzione{np.min(dif_time)}')
+        print(f'tempo medio di esecuzione {np.mean(dif_time)}')
+
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print('Main Start')
-    target = tar_c.target(dt=0.01)
-    drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0)
-    guidance = DroneGuidance(target, drone,initial_velocity= np.array([1.0, 0.0, 0.0]),N=4)
-    guidance.start(0.0, 0.4)
+    target = tar_c.target(initial_position=np.array([1.0, -1.0, 0.5]),
+                          initial_velocity=np.array([-0.2, 0.3, 0.0]),
+                          dt=0.05)
+
+    drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,
+                         box=np.array([1.0, -1.5, 2.0, -1.0]))
+
+    guidance = DroneGuidance(target, drone,
+                             initial_velocity=np.array([1.0, 0.0, 0.0]),
+                             N=3, dt=0.02)
+    guidance.start(0.0, 0.5)
     guidance.stop()
-    print(np.min(guidance.R))
+    guidance.plot_chase()
+    guidance.plot_chase_info()
+    print(f'la distanza minore raggiunta dal drone vale {np.min(guidance.R)}')
     print('Main Finished')

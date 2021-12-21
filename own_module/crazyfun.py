@@ -81,7 +81,7 @@ def print_callback_vel_est(timestamp, data, log_conf):
     pos_z = sc_v.pos_estimate[2] = data['kalman.stateZ']
     v_x = sc_v.vel_estimate[0] = data['kalman.statePX']
     v_y = sc_v.vel_estimate[1] = data['kalman.statePY']
-    v_z = sc_v.vel_estimate[2] = data['kalman.statePZ']
+    v_z = sc_v.vel_estimate[2] = data['stabilizer.yaw']
     callback_mutex.release()
     global battery
     battery = data['pm.state']
@@ -128,7 +128,7 @@ def datalog(sync_crazyflie):
     measure_log.add_variable('kalman.stateZ', 'float')
     measure_log.add_variable('kalman.statePX', 'float')
     measure_log.add_variable('kalman.statePY', 'float')
-    measure_log.add_variable('kalman.statePZ', 'float')
+    measure_log.add_variable('stabilizer.yaw', 'float')
     # measure_log.add_variable('stabilizer.roll', 'float')
     # measure_log.add_variable('stabilizer.pitch', 'float')
     # measure_log.add_variable('stabilizer.yaw', 'float')

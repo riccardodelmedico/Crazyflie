@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20211220_172915.txt";
+name = "crazyfun__20211221_112038.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -55,7 +55,7 @@ drone_quatw = vicon_data(:,7);          % /
 cust_time = datetime(vicon_data(:,end), 'ConvertFrom', 'datenum');
 
 
-% setx_v = set_data(:,1);                 % \
+% setx_v = set_data(:,2);                 % \
 % sety_v = set_data(:,2);                 %  |-> setpoint coordinates in Vicon reference system
 % setz_v = set_data(:,3);                 % /
 % set_time = datetime(set_data(:,end), 'ConvertFrom', 'datenum');
