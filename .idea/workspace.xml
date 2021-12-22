@@ -4,16 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="Codice della guida adattato al laboratorio. &#10;Creata branch per eventuali simulazioni da casa">
+    <list default="true" id="fa5afe00-0115-4cd8-befa-c82412a3d8b6" name="Changes" comment="primi test sulla guida. alcuni funzionano">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MATLAB scripts/custom_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/custom_plot.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MATLAB scripts/custom_plot_vel.m" beforeDir="false" afterPath="$PROJECT_DIR$/MATLAB scripts/custom_plot_vel.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SCRIPTS/DroneGuidance.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/DroneGuidance.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SCRIPTS/DroneManager.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/DroneManager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/True_Guidance_Class.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" beforeDir="false" afterPath="$PROJECT_DIR$/SCRIPTS/velocity_estimation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/own_module/crazyfun.py" beforeDir="false" afterPath="$PROJECT_DIR$/own_module/crazyfun.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/own_module/script_variables.py" beforeDir="false" afterPath="$PROJECT_DIR$/own_module/script_variables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -164,9 +161,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.DroneGuidance" />
-        <item itemvalue="Python.DroneManager (1)" />
         <item itemvalue="Python.True_Guidance_Class" />
         <item itemvalue="Python.velocity_estimation" />
+        <item itemvalue="Python.DroneManager (1)" />
         <item itemvalue="Python.DroneManager" />
       </list>
     </recent_temporary>
@@ -236,7 +233,21 @@
       <option name="project" value="LOCAL" />
       <updated>1639997084219</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Implementate drone manager e guidance, il manager funge bene ma la guida deve essere tunata">
+      <created>1640018182903</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1640018182903</updated>
+    </task>
+    <task id="LOCAL-00010" summary="primi test sulla guida. alcuni funzionano">
+      <created>1640105230397</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1640105230397</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -258,6 +269,8 @@
     <MESSAGE value="aggiunto iil titolo ai plot, miglioranta l'integraione introducendo direttamente i tempi mediante la funzione time.time()" />
     <MESSAGE value="aggiornamento della classe target con modifiche finali + debug simulatore di guida PNG" />
     <MESSAGE value="Codice della guida adattato al laboratorio. &#10;Creata branch per eventuali simulazioni da casa" />
-    <option name="LAST_COMMIT_MESSAGE" value="Codice della guida adattato al laboratorio. &#10;Creata branch per eventuali simulazioni da casa" />
+    <MESSAGE value="Implementate drone manager e guidance, il manager funge bene ma la guida deve essere tunata" />
+    <MESSAGE value="primi test sulla guida. alcuni funzionano" />
+    <option name="LAST_COMMIT_MESSAGE" value="primi test sulla guida. alcuni funzionano" />
   </component>
 </project>

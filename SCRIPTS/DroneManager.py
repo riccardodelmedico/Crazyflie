@@ -84,7 +84,7 @@ class DroneManager:
                                                          i,
                                                          math.degrees(self.initial_orientation[2]))
             time.sleep(0.2)
-        for j in np.arange(math.degrees(self.initial_orientation[2]),yaw,-20):
+        for j in np.arange(math.degrees(self.initial_orientation[2]),yaw,-10):
             for i in range(2):
                 self.scf.cf.commander.send_position_setpoint(self.position[0],
                                                              self.position[1],
@@ -110,7 +110,7 @@ class DroneManager:
         crazy.callback_mutex.acquire(blocking=True)
         self.position = sc_v.pos_estimate[0:2]
         self.velocity = sc_v.vel_estimate[0:2]
-        self.yaw = sc_v.vel_estimate[2]
+        self.yaw = sc_v.pos_estimate[2]
         crazy.callback_mutex.release()
 
     def check_virtual_box(self):
@@ -129,8 +129,7 @@ class DroneManager:
                                                           yawrate,
                                                           sc_v.DEFAULT_HEIGHT)
 
-                crazy.command_matlab.write(vx, vy, 0.0,
-                                           vx, vy)
+                crazy.command_matlab.write(vx, vy, yawrate)
                 time.sleep(dt)
                 return True
             else:

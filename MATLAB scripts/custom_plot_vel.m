@@ -2,7 +2,7 @@ clear; close all; clc
 command_flag = 1;
 
 %% File loading
-name = "crazyfun__20211221_093115.txt";
+name = "crazyfun__20211222_142724.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -54,9 +54,9 @@ cust_time = datetime(vicon_data(:,end), 'ConvertFrom', 'datenum');
 int_px = internal_data(:,1);            % \
 int_py = internal_data(:,2);            %  |-> internal estimate of drone position
 int_pz = internal_data(:,3);            % /
-int_vx = internal_data(:,4);          % \
-int_vy = internal_data(:,5);         % |-> internal estimate of drone attitude
-int_vz = internal_data(:,6);           % /
+int_vx = internal_data(:,4);            % \
+int_vy = internal_data(:,5);            % |-> internal estimate of drone attitude
+int_vz = internal_data(:,6);            % /
 int_time = datetime(internal_data(:,end), 'ConvertFrom', 'datenum');
 
 if(command_flag)

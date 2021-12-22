@@ -89,6 +89,29 @@ def print_callback_vel_est(timestamp, data, log_conf):
     int_matlab.write(pos_x, pos_y, pos_z, v_x, v_y, v_z)
     # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
 
+def print_callback_guidance(timestamp, data, log_conf):
+    """
+    Prints gathered data to a specific file.
+
+    :param data: Data to be logged.
+    :type data:
+    :return: None.
+    :rtype: None
+    """
+    callback_mutex.acquire(blocking=True)
+    pos_x = sc_v.pos_estimate[0] = data['kalman.stateX']
+    pos_y = sc_v.pos_estimate[1] = data['kalman.stateY']
+    yaw = sc_v.pos_estimate[2] = data['stabilizer.yaw']
+    v_x = sc_v.vel_estimate[0] = data['kalman.statePX']
+    v_y = sc_v.vel_estimate[1] = data['kalman.statePY']
+    yaw_rate = sc_v.vel_estimate[2] = data['stateEstimateZ.rateYaw']
+
+    callback_mutex.release()
+    global battery
+    battery = data['pm.state']
+    # Print state estimate to file
+    int_matlab.write(pos_x, pos_y, yaw, v_x, v_y, yaw_rate)
+    # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
 
 def datalog_async(sync_crazyflie, log_conf):
     """
@@ -105,7 +128,7 @@ def datalog_async(sync_crazyflie, log_conf):
 
     crazyflie = sync_crazyflie.cf
     crazyflie.log.add_config(log_conf)
-    log_conf.data_received_cb.add_callback(print_callback_vel_est)
+    log_conf.data_received_cb.add_callback(print_callback_guidance)
 
 
 def datalog(sync_crazyflie):
@@ -125,7 +148,7 @@ def datalog(sync_crazyflie):
     measure_log = LogConfig(name='TotalEstimate', period_in_ms=datalog_period)
     measure_log.add_variable('kalman.stateX', 'float')
     measure_log.add_variable('kalman.stateY', 'float')
-    measure_log.add_variable('kalman.stateZ', 'float')
+    measure_log.add_variable('stateEstimateZ.rateYaw', 'float')
     measure_log.add_variable('kalman.statePX', 'float')
     measure_log.add_variable('kalman.statePY', 'float')
     measure_log.add_variable('stabilizer.yaw', 'float')
@@ -445,7 +468,8 @@ class MatlabPrint:
             1: "setpoint_data",
             2: "internal_data",
             3: "wand_data",
-            4: "command_data"
+            4: "command_data",
+            5 : "guidance_data"
         }
 
         folder = print_type.get(flag, "Unmanaged")
@@ -650,6 +674,7 @@ set_matlab = MatlabPrint(flag=1)
 int_matlab = MatlabPrint(flag=2)
 wand_matlab = MatlabPrint(flag=3)
 command_matlab = MatlabPrint(flag= 4)
+guidance_matlab =MatlabPrint(flag= 5)
 command_matlab.write(0,0,0)
 safety_offset = 0.3
 time_limit = 60  # [s]

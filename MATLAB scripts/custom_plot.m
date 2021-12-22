@@ -43,6 +43,7 @@ end
 clear wand vicon setpoints internal
 clear raw_set_data raw_vicon_data raw_wand raw_internal_data
 clear current_file delimiterIn headerlinesIn name path
+
 %% Data extraction
 % Extracted data                        Variables meaning 
 drone_posx = vicon_data(:,1);           % \
