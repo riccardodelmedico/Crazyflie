@@ -13,9 +13,10 @@ from cflib.positioning.position_hl_commander import PositionHlCommander
 #from vicon_dssdk import ViconDataStream
 import target_class as tar_c
 import matplotlib.pyplot as plt
+import FadingFilter as ff_c
 def sim_guidance(pursuer,target,dt,N):
     # get the target position and velocity to calculate R Vc and \dot{Sigma}
-    (t_pos,t_vel) = target.get_target()
+    (t_pos,t_vel,a,b) = target.get_target()
     R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
@@ -43,13 +44,40 @@ def sim_guidance(pursuer,target,dt,N):
     pursuer.list_pos = np.concatenate((pursuer.list_pos,pursuer.p.reshape((1,3))),axis=0)
 
     #interception condition
+def sim_guidance_filtered(pursuer,target,dt,N):
+    # get the target position and velocity to calculate R Vc and \dot{Sigma}
+    (t_pos,t_vel) = target.get_estimation()
+    R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
+    pursuer.R = np.append(pursuer.R, np.array([R]))
+    pursuer.time_line = np.append(pursuer.time_line, time.time())
+    if R < 3e-2 and pursuer.ka_boom == None:
 
+        pursuer.ka_boom = len(pursuer.R)
+        print(f"interncettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
+
+    Vc =  - ((t_vel[0]-pursuer.v[0])*(t_pos[0]-pursuer.p[0])+(t_vel[1]-pursuer.v[1])*(t_pos[1]-pursuer.p[1]))/R
+    dotSigma = ((t_vel[1] - pursuer.v[1]) * (t_pos[0] - pursuer.p[0]) - (t_vel[0] - pursuer.v[0]) * (t_pos[1] - pursuer.p[1])) /( R * R )
+
+    # append these values to numpy to plot at the end their behavior on time
+    pursuer.dotSigma = np.append(pursuer.dotSigma,np.array([dotSigma]))
+    pursuer.Vc = np.append(pursuer.Vc,np.array([Vc]))
+    #calculate PNG acceleration
+    Ac = N * Vc * dotSigma
+    if len(pursuer.time_line) <2:
+        deltat=dt
+    else:
+        deltat = pursuer.time_line[-1] - pursuer.time_line[-2]
+   #integrate velociticy and acceleration with forward euler
+    if np.linalg.norm(pursuer.v,2) != 0:
+        pursuer.p += pursuer.v * deltat + target.target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac * deltat * deltat /2
+        pursuer.v += target.target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac* deltat
+    pursuer.list_pos = np.concatenate((pursuer.list_pos,pursuer.p.reshape((1,3))),axis=0)
 
 
 
 
 class guidance():
-    def __init__(self,target,inital_pose=np.array([0.0,0.0,0.5,math.pi/2]),chase_vel=0.2,N=3,Simulation_Guidance=True, dt=0.05):
+    def __init__(self,target,inital_pose=np.array([0.0,0.0,0.5,math.pi/2]),chase_vel=0.2,N=3,Simulation_Guidance=True, dt=0.05, filter = True):
         if Simulation_Guidance:
             # pursuer position  and velocity
             self.p = np.array(inital_pose[0:3])
@@ -59,7 +87,11 @@ class guidance():
 
             #list of element for plot
             self.list_pos = self.p.reshape((1,3))
-            self.update_thread = threading.Thread(target= tar_c.repeat_fun, args = (dt,sim_guidance,self,target,dt,N))
+            if filter:
+                self.update_thread = threading.Thread(target=tar_c.repeat_fun,
+                                                      args=(dt, sim_guidance_filtered, self, target, dt, N))
+            else:
+                self.update_thread = threading.Thread(target= tar_c.repeat_fun, args = (dt,sim_guidance,self,target,dt,N))
             self.dotSigma = np.array([])
             self.Vc = np.array([])
             self.R = np.array([])
@@ -88,13 +120,17 @@ class guidance():
 
             self.list_pos = self.list_pos[0:self.ka_boom,:]
             self.target.list_pos = self.target.list_pos[0:self.ka_boom,:]
+            self.target.real_pos = self.target.real_pos[0:self.ka_boom, :]
         plt.figure(1)
         plt.plot(self.list_pos[0,0],self.list_pos[0,1],'ro')
         plt.plot(self.list_pos[:,0], self.list_pos[:,1],'r-')
         plt.plot(self.list_pos[-1,0] , self.list_pos[-1,1],'r->')
-        plt.plot(self.target.list_pos[0, 0], self.target.list_pos[0, 1], 'go')
-        plt.plot(self.target.list_pos[:, 0], self.target.list_pos[:, 1], 'g-')
-        plt.plot(self.target.list_pos[-1, 0], self.target.list_pos[-1, 1], 'g->')
+        plt.plot(self.target.list_pos[0, 0], self.target.list_pos[0, 1], 'bo')
+        plt.plot(self.target.list_pos[:, 0], self.target.list_pos[:, 1], 'b--')
+        plt.plot(self.target.list_pos[-1, 0], self.target.list_pos[-1, 1], 'b->')
+        plt.plot(self.target.real_pos[0, 0], self.target.real_pos[0, 1], 'go')
+        plt.plot(self.target.real_pos[:, 0], self.target.real_pos[:, 1], 'g-')
+        plt.plot(self.target.real_pos[-1, 0], self.target.real_pos[-1, 1], 'g->')
         plt.show()
     def plot_chase_info(self):
         if self.ka_boom != None:
@@ -120,14 +156,19 @@ class guidance():
         print(f'tempo minimo di esecuzione{np.min(dif_time)}')
         print(f'tempo medio di esecuzione {np.mean(dif_time)}')
 
+in_p =np.array([10.0,10.0,0.5])
+in_v =np.array([1,1,0.0])
+delta = 2e-2
+a=tar_c.target(initial_position=in_p,initial_velocity=in_v,dt=0.002)
+ff = ff_c.Fading_Filter(a,Nstd= 3e-2 ,Dimensions=2,Order=2,Beta=0.7,dt=delta)
+ff.initial(np.array([in_p,in_v]))
 
-a=tar_c.target(initial_position=np.array([1.0,1.0,0.5]),initial_velocity=np.array([0.0,0.1,0.0]),dt=0.002)
-
-pur=guidance(a,chase_vel=2,dt=0.002,N=4)
+pur=guidance(ff,chase_vel=3,dt=delta,N=4,filter= True)
 
 pur.start()
-time.sleep(20)
+time.sleep(60)
 pur.stop()
+ff.plot_Filter()
 pur.plot_chase()
 pur.plot_chase_info()
 

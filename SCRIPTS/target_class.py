@@ -75,17 +75,26 @@ class target():
         self.v = initial_velocity
         self.a = initial_acceleration_module
         self.list_pos = initial_position.reshape((1,3))
-        self.time_line = np.array([])
+        self.time_line = np.array([0.0])
         self.omega_vers_hat = np.array([[0,-1,0],[1,0,0],[0,0,0]])
         self.update_thread = threading.Thread(target= repeat_fun,args=(dt,update_virtual_target, self, dt) )
         self.mutex = threading.Semaphore(1)
     def get_target(self):
         self.mutex.acquire(True)
-        ret = (self.p,self.v)
+        if len(np.argwhere(self.v == 0)) <3:
+            acc = self.omega_vers_hat.dot(self.v/np.linalg.norm(self.v,2))*self.a
+        else:
+            acc = np.zeros(3)
+        if self.time_line[0] == 0.0:
+            ret = (self.p, self.v, acc,0.0)
+        else:
+            ret = (self.p,self.v,acc,self.time_line[-1])
         self.mutex.release()
         return ret
+
     def start(self):
         global run
+        self.time_line[0] = time.time()
         print('avvio il thread')
         run=True
         #self.update_thread.daemon=True
