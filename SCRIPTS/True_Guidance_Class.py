@@ -78,6 +78,7 @@ def sim_APNG_guidance_filtered(pursuer,target,dt,N):
     (t_pos,t_vel,t_acc) = target.get_estimation()
     R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
     sigma = math.atan2(t_pos[1] - pursuer.p[1],t_pos[0] - pursuer.p[0])
+    pursuer.sigma = np.append(pursuer.sigma, np.array([sigma]))
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
     if R < 3e-2 and pursuer.ka_boom == None:
@@ -100,9 +101,11 @@ def sim_APNG_guidance_filtered(pursuer,target,dt,N):
     Ort_R = pursuer.target.target.omega_vers_hat.dot(R_v)
 
     AcAPNG = np.transpose(Ort_R).dot(t_acc)/math.cos(sigma)
+    AcAPNG_vett= AcAPNG*Ort_R
     #calculate PNG acceleration
     #print( AcAPNG,N * Vc * dotSigma)
-    Ac = N * Vc * dotSigma + AcAPNG
+    N_tv = N / math.cos(sigma - math.atan2(pursuer.p[1],pursuer.p[0]))
+    Ac = N *( Vc * dotSigma+ AcAPNG/2)
    # Ac+= AcAPNG
     if len(pursuer.time_line) <2:
         deltat=dt
@@ -110,7 +113,7 @@ def sim_APNG_guidance_filtered(pursuer,target,dt,N):
         deltat = pursuer.time_line[-1] - pursuer.time_line[-2]
    #integrate velociticy and acceleration with forward euler
     if np.linalg.norm(pursuer.v,2) != 0:
-        pursuer.p += pursuer.v * deltat + target.target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac * deltat * deltat /2
+        pursuer.p += pursuer.v * deltat + target.target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac * deltat * deltat /2 #+ N*AcAPNG_vett*math.pow(deltat,2)/2
         pursuer.v += target.target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac* deltat
     pursuer.list_pos = np.concatenate((pursuer.list_pos,pursuer.p.reshape((1,3))),axis=0)
 
@@ -136,6 +139,7 @@ class guidance():
             self.dotSigma = np.array([])
             self.Vc = np.array([])
             self.R = np.array([])
+            self.sigma = np.array([])
             self.time_line = np.array([])
             # istant of interception
             self.ka_boom=None
@@ -178,6 +182,7 @@ class guidance():
 
             self.time_line = self.time_line[0:self.ka_boom]
             self.R = self.R[0:self.ka_boom]
+            self.sigma=self.sigma[0:self.ka_boom]
             self.dotSigma = self.dotSigma[0:self.ka_boom]
             self.Vc = self.Vc[0:self.ka_boom]
         plt.figure(1)
@@ -192,24 +197,29 @@ class guidance():
         plt.title('Pursuer/Target Distance')
         plt.plot(self.time_line, self.R[:], '-')
         plt.show()
+        plt.title('Sigma')
+        plt.plot(self.time_line, self.sigma[:], '-')
+        plt.show()
+
         print(f'la distanza minima di intercettazione vale {np.min(self.R)}')
         dif_time = np.array([self.time_line[i]-self.time_line[i-1] for i in np.arange(1,len(self.time_line),1)])
         print(f'tempo minimo di esecuzione{np.min(dif_time)}')
         print(f'tempo medio di esecuzione {np.mean(dif_time)}')
 
-in_p =np.array([10.0,0.0,0.5])
-in_v =np.array([1.0,0.0,0.0])
+in_p =np.array([10.0,10.0,0.5])
+in_v =np.array([-2.0,1.0,0.0])
 
 in_a = np.zeros(3)
 delta = 2e-2
-a=tar_c.target(initial_position=in_p,initial_velocity=in_v,initial_acceleration_module= -0.05,dt=0.002)
-ff = ff_c.Fading_Filter(a,Nstd= 2e-3 ,Dimensions=2,Order=3,Beta=0.7,dt=delta)
+a=tar_c.target(initial_position=in_p,initial_velocity=in_v,initial_acceleration_module= 0.7,dt=0.002)
+ff = ff_c.Fading_Filter(a,Nstd= 3.333e-3 ,Dimensions=2,Order=3,Beta=0.8,dt=delta)
 ff.initial(np.array([in_p,in_v,in_a]))
-ini_pur_poos = np.array([-10.0,10.0,0.5,-math.pi/3])
-pur=guidance(ff,inital_pose=ini_pur_poos,chase_vel=3,dt=delta,N=4,filter= True)
+ini_pur_poos = np.array([0.0,0.0,0.5,math.pi/2])#-4* math.pi/4])
+
+pur=guidance(ff,inital_pose=ini_pur_poos,chase_vel=6,dt=delta,N=5,filter= True)
 
 pur.start()
-time.sleep(20)
+time.sleep(30)
 pur.stop()
 ff.plot_Filter()
 pur.plot_chase()
