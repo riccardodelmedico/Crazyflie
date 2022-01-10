@@ -134,7 +134,7 @@ class DroneManager:
                 return True
             else:
                 self.landing()
-                return  False
+                return False
 
     def landing(self):
         self.flying = False
