@@ -29,6 +29,7 @@ class DroneManager:
         self.scf.cf.param.set_value('kalman.pNVel', pnVel)
         self.position = np.array([])
         self.velocity = np.array([])
+        self.yawrate = np.array([])
         self.initial_orientation = np.array([])
         self.flying =False
         self.yaw = 0.0
@@ -133,6 +134,7 @@ class DroneManager:
         self.position = sc_v.pos_estimate[0:2]
         self.velocity = sc_v.vel_estimate[0:2]
         self.yaw = sc_v.pos_estimate[2]
+        self.yawrate =  sc_v.vel_estimate[2]
         crazy.callback_mutex.release()
 
     def check_virtual_box(self):

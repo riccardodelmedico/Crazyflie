@@ -67,6 +67,10 @@ class target():
                                                   self))
         self.mutex = threading.Semaphore(1)
 
+    def initial_wand(self, in_p):
+        if self.wand:
+            self.p= in_p
+
     def get_target(self):
         self.mutex.acquire(True)
         if len(np.argwhere(self.v == 0)) < 3:

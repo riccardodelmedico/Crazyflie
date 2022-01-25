@@ -346,6 +346,7 @@ class DroneGuidance:
         in_v = np.array([0.0, 0.0, 0.0])
         in_a = np.zeros(3)
 
+        self.target.target.initial_wand(in_p)
         self.target.initial(np.array([in_p, in_v, in_a]))
 
         crazy.run = True
@@ -385,6 +386,7 @@ class DroneGuidance:
             self.target.real_pos = self.target.real_pos[0:i, :]
             self.target.time_line = self.target.time_line[0:i]
         plt.figure(1)
+        plt.gca().set_aspect('equal', adjustable='box')
         plt.plot(self.list_pos[0, 0], self.list_pos[0, 1], 'ro')
         plt.plot(self.list_pos[:, 0], self.list_pos[:, 1], 'r-')
         plt.plot(self.list_pos[-1, 0], self.list_pos[-1, 1], 'r->')
@@ -457,12 +459,12 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     ff.initial(np.array([in_p, in_v, in_a]))
 
     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,
-                         box=np.array([1.0, -1.8, 2.0, -0.5]))
+                         box=np.array([1.0, -1.8, 2.0, -1.5]))
 
     guidance = DroneGuidance(comp, ff, drone,
-                             guidance_velocity=0.4,
+                             guidance_velocity=0.6,
                              N=5, dt=0.01)
-    guidance.start(0.0, 0.4)
+    guidance.start(0.0, 1.0)
     guidance.stop()
     guidance.plot_chase()
 
