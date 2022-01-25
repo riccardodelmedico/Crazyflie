@@ -14,14 +14,16 @@ from cflib.positioning.position_hl_commander import PositionHlCommander
 import target_class as tar_c
 import matplotlib.pyplot as plt
 import FadingFilter as ff_c
-def sim_guidance(pursuer,target,dt,N):
+import FadingFilterHoming as FFH
+
+
+def sim_guidance(pursuer, target, dt, N):
     # get the target position and velocity to calculate R Vc and \dot{Sigma}
-    (t_pos,t_vel,a,b) = target.get_target()
-    R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2],2)
+    (t_pos, t_vel, a, b) = target.get_target()
+    R = np.linalg.norm(t_pos[0:2]-pursuer.p[0:2], 2)
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
-    if R < 2e-3 and pursuer.ka_boom == None:
-
+    if R < 2e-3 and pursuer.ka_boom is None:
         pursuer.ka_boom = len(pursuer.R)
         print(f"interncettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
 
@@ -81,7 +83,7 @@ def sim_APNG_guidance_filtered(pursuer,target,dt,N):
     pursuer.sigma = np.append(pursuer.sigma, np.array([sigma]))
     pursuer.R = np.append(pursuer.R, np.array([R]))
     pursuer.time_line = np.append(pursuer.time_line, time.time())
-    if R < 3e-2 and pursuer.ka_boom == None:
+    if R < 5e-2 and pursuer.ka_boom == None:
 
         pursuer.ka_boom = len(pursuer.R)
         print(f"interncettazione avvenuta al tempo { pursuer.time_line[pursuer.ka_boom - 1]- pursuer.time_line[0]}, il valore di R all' intercettazione vale {R}" )
@@ -92,10 +94,6 @@ def sim_APNG_guidance_filtered(pursuer,target,dt,N):
     # append these values to numpy to plot at the end their behavior on time
     pursuer.dotSigma = np.append(pursuer.dotSigma,np.array([dotSigma]))
     pursuer.Vc = np.append(pursuer.Vc,np.array([Vc]))
-
-
-
-
     R_v = np.append(t_pos[0:2]-pursuer.p[0:2],0)/R
 
     Ort_R = pursuer.target.target.omega_vers_hat.dot(R_v)
@@ -130,7 +128,7 @@ class guidance():
             print(f'pursuer initial Pos:{self.p},initial Vel:{self.v}')
 
             #list of element for plot
-            self.list_pos = self.p.reshape((1,3))
+            self.list_pos = self.p.reshape((1, 3))
             if filter:
                 self.update_thread = threading.Thread(target=tar_c.repeat_fun,
                                                       args=(dt, sim_APNG_guidance_filtered, self, target, dt, N))
@@ -149,27 +147,29 @@ class guidance():
             self.chase_vel = chase_vel
         self.target = target
         self.N = N
+
     def start(self):
-        tar_c.run=True
+        tar_c.run = True
         self.update_thread.start()
         self.target.start()
+
     def stop(self):
-        tar_c.run=False
+        tar_c.run = False
         self.update_thread.join()
         self.target.stop()
         print(len(self.target.list_pos))
-        self.time_line-=self.time_line[0]
+        self.time_line -= self.time_line[0]
+
     def plot_chase(self):
-
-        if self.ka_boom != None:
-
-            self.list_pos = self.list_pos[0:self.ka_boom,:]
-            self.target.list_pos = self.target.list_pos[0:self.ka_boom,:]
+        if self.ka_boom is not None:
+            self.list_pos = self.list_pos[0:self.ka_boom, :]
+            self.target.list_pos = self.target.list_pos[0:self.ka_boom, :]
             self.target.real_pos = self.target.real_pos[0:self.ka_boom, :]
         plt.figure(1)
-        plt.plot(self.list_pos[0,0],self.list_pos[0,1],'ro')
-        plt.plot(self.list_pos[:,0], self.list_pos[:,1],'r-')
-        plt.plot(self.list_pos[-1,0] , self.list_pos[-1,1],'r->')
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.plot(self.list_pos[0, 0], self.list_pos[0, 1], 'ro')
+        plt.plot(self.list_pos[:, 0], self.list_pos[:, 1], 'r-')
+        plt.plot(self.list_pos[-1, 0], self.list_pos[-1, 1], 'r->')
         plt.plot(self.target.list_pos[0, 0], self.target.list_pos[0, 1], 'bo')
         plt.plot(self.target.list_pos[:, 0], self.target.list_pos[:, 1], 'b--')
         plt.plot(self.target.list_pos[-1, 0], self.target.list_pos[-1, 1], 'b->')
@@ -177,9 +177,9 @@ class guidance():
         plt.plot(self.target.real_pos[:, 0], self.target.real_pos[:, 1], 'g-')
         plt.plot(self.target.real_pos[-1, 0], self.target.real_pos[-1, 1], 'g->')
         plt.show()
-    def plot_chase_info(self):
-        if self.ka_boom != None:
 
+    def plot_chase_info(self):
+        if self.ka_boom is not None:
             self.time_line = self.time_line[0:self.ka_boom]
             self.R = self.R[0:self.ka_boom]
             self.sigma=self.sigma[0:self.ka_boom]
@@ -200,26 +200,26 @@ class guidance():
         plt.title('Sigma')
         plt.plot(self.time_line, self.sigma[:], '-')
         plt.show()
-
         print(f'la distanza minima di intercettazione vale {np.min(self.R)}')
         dif_time = np.array([self.time_line[i]-self.time_line[i-1] for i in np.arange(1,len(self.time_line),1)])
         print(f'tempo minimo di esecuzione{np.min(dif_time)}')
         print(f'tempo medio di esecuzione {np.mean(dif_time)}')
 
-in_p =np.array([10.0,10.0,0.5])
-in_v =np.array([-2.0,1.0,0.0])
 
+in_p = np.array([10.0, 10.0, 0.5])
+in_v = np.array([-2.0, 1.0, 0.0])
 in_a = np.zeros(3)
 delta = 2e-2
-a=tar_c.target(initial_position=in_p,initial_velocity=in_v,initial_acceleration_module= 0.7,dt=0.002)
-ff = ff_c.Fading_Filter(a,Nstd= 3.333e-3 ,Dimensions=2,Order=3,Beta=0.8,dt=delta)
-ff.initial(np.array([in_p,in_v,in_a]))
-ini_pur_poos = np.array([0.0,0.0,0.5,math.pi/2])#-4* math.pi/4])
 
-pur=guidance(ff,inital_pose=ini_pur_poos,chase_vel=6,dt=delta,N=5,filter= True)
+a = tar_c.target(initial_position=in_p, initial_velocity=in_v, initial_acceleration_module=0.5, dt=0.002)
+ff = ff_c.Fading_Filter(a, Nstd=3.333e-3, Dimensions=2, Order=3, Beta=0.9, dt=delta)
+ff.initial(np.array([in_p, in_v, in_a]))
+ini_pur_pos = np.array([0.0, 0.0, 0.5, math.pi/2])#-4* math.pi/4])
+
+pur = guidance(ff, inital_pose=ini_pur_pos, chase_vel=3, dt=delta, N=5, filter=True)
 
 pur.start()
-time.sleep(30)
+time.sleep(10)
 pur.stop()
 ff.plot_Filter()
 pur.plot_chase()
