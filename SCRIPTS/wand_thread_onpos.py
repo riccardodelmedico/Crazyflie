@@ -25,7 +25,7 @@ precedent = sc_v.wand_pos  # At this point this is already initialized
 equal_pos = 0              # counter of wand position equal to precedent
 while crazy.run:
     time.sleep(crazy.wand_period)
-    print(linalg.norm(np.array(precedent) - np.array(sc_v.wand_pos)))
+    #print(linalg.norm(np.array(precedent) - np.array(sc_v.wand_pos)))
     if equal_pos >= crazy.max_equal_pos:
         crazy.run = False
     if linalg.norm(np.array(precedent) - np.array(sc_v.wand_pos)) <= crazy.pos_limit:  # [m]
@@ -39,8 +39,10 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
     scf.cf.param.set_value('stabilizer.estimator', 2)  # set KF as estimator
     scf.cf.param.set_value('commander.enHighLevel', '1')
-    scf.cf.param.set_value('kalman.pNAcc_xy', 1.5)
-    scf.cf.param.set_value('kalman.pNAcc_z', 2.0)
+    scf.cf.param.set_value('kalman.pNAcc_xy', 2.0)
+    scf.cf.param.set_value('kalman.pNAcc_z', 1.5)
+    scf.cf.param.set_value('kalman.pNVel', 1.0)
+    scf.cf.param.set_value('kalman.pNPos', 0.025)
 
     crazy.int_matlab.write("% x y z qx qy qz qw")
     crazy.set_matlab.write("% set_x set_y set_z")

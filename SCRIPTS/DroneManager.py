@@ -29,6 +29,7 @@ class DroneManager:
         self.scf.cf.param.set_value('kalman.pNVel', pnVel)
         self.position = np.array([])
         self.velocity = np.array([])
+        self.initial_orientation = np.array([])
         self.flying =False
         self.yaw = 0.0
         self.box = box
@@ -47,20 +48,28 @@ class DroneManager:
         cf.param.set_value('kalman.resetEstimation', '0')
 
     def start(self, vx, vy):
-        self.position = np.array(sc_s.vicon. \
-            GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0])
+        self.position = np.array(sc_s.vicon.
+                                 GetSegmentGlobalTranslation(sc_v.drone,
+                                                             sc_v.drone)[0])
         self.position /= 1000
         self.initial_orientation = sc_s.vicon. \
             GetSegmentGlobalRotationEulerXYZ(sc_v.drone, sc_v.drone)[0]
-        print(f'init_pos: x{self.position[0]}, y:{self.position[1]}')
+
+        print(f'Initial position[m]: x{self.position[0]}, y:{self.position[1]}'
+              f' z{self.position[2]}')
+        print(f"initial yaw [degree] :{math.degrees(self.initial_orientation[2])}")
+
+        time.sleep(5)
 
         self.scf.cf.param.set_value('kalman.initialX', float(self.position[0]))
         self.scf.cf.param.set_value('kalman.initialY', float(self.position[1]))
         self.scf.cf.param.set_value('kalman.initialZ', float(self.position[2]))
-        self.scf.cf.param.set_value('kalman.initialYaw', float(self.initial_orientation[2]))
-        print('Start Reset Kalman Filter')
+        self.scf.cf.param.set_value('kalman.initialYaw',
+                                    float(self.initial_orientation[2]))
+
         self.reset_estimator()
-        print('End Reset Kalman Filter')
+        print('End Kalman Filter Reset')
+
         # vicon_pose_sending
         self.vicon_thread.daemon = True
         self.vicon_thread.start()
@@ -84,13 +93,25 @@ class DroneManager:
                                                          i,
                                                          math.degrees(self.initial_orientation[2]))
             time.sleep(0.2)
-        for j in np.arange(math.degrees(self.initial_orientation[2]),yaw,-10):
+        print('decollo fatto')
+        #print(f'print dei valori degli angoli per l allineamento {math.degrees(self.initial_orientation[2])} , {yaw}')
+        init_yaw_degree = math.degrees(self.initial_orientation[2])
+        if init_yaw_degree < 0:
+            init_yaw_degree += 360.0
+
+        if init_yaw_degree - yaw > 0:
+            align = np.arange(init_yaw_degree, yaw, -15)
+        else:
+            align = np.arange(init_yaw_degree, yaw, 15)
+        for j in align:
             for i in range(2):
                 self.scf.cf.commander.send_position_setpoint(self.position[0],
                                                              self.position[1],
                                                              sc_v.DEFAULT_HEIGHT,
                                                              j)
+
                 time.sleep(0.1)
+        print('oriento lo yaw in modo da essere allineato')
         for i in range(10):
             self.scf.cf.commander.send_position_setpoint(self.position[0],
                                                          self.position[1],
@@ -104,6 +125,7 @@ class DroneManager:
                                                       sc_v.DEFAULT_HEIGHT)
 
         self.get_state()
+        print('dentro v-box')
         print(f'Guidance Velocity reached. Pos:{self.position}')
 
     def get_state(self):
@@ -133,17 +155,22 @@ class DroneManager:
                 time.sleep(dt)
                 return True
             else:
+                print('out of Virtual Box')
                 self.landing()
                 return False
 
     def landing(self):
         self.flying = False
-        for i in np.arange(0.5, -0.11, -0.1):
+        for i in np.arange(0.5, 0, -0.05):
             self.get_state()
             self.scf.cf.commander.send_position_setpoint(self.position[0],
                                                          self.position[1],
                                                          i, self.yaw)
             time.sleep(0.2)
+        self.scf.cf.commander.send_position_setpoint(self.position[0],
+                                                     self.position[1],
+                                                     -0.1, self.yaw)
+        time.sleep(0.2)
         crazy.run = False
 
     # def stop(self):

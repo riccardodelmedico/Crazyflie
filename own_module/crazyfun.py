@@ -89,6 +89,7 @@ def print_callback_vel_est(timestamp, data, log_conf):
     int_matlab.write(pos_x, pos_y, pos_z, v_x, v_y, v_z)
     # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
 
+
 def print_callback_guidance(timestamp, data, log_conf):
     """
     Prints gathered data to a specific file.
@@ -152,6 +153,7 @@ def datalog(sync_crazyflie):
     measure_log.add_variable('kalman.statePX', 'float')
     measure_log.add_variable('kalman.statePY', 'float')
     measure_log.add_variable('stabilizer.yaw', 'float')
+    # measure_log.add_variable('kalman.stateZ', 'float')
     # measure_log.add_variable('stabilizer.roll', 'float')
     # measure_log.add_variable('stabilizer.pitch', 'float')
     # measure_log.add_variable('stabilizer.yaw', 'float')
@@ -343,16 +345,16 @@ def pose_sending(sync_cf):
                       float(sc_v.drone_pos[1] / 1000),
                       float(sc_v.drone_pos[2] / 1000))
 
-    # Send to drone estimator
+    # # Send to drone estimator
     # sync_cf.cf.extpos.send_extpose(sc_v.drone_pos[0], sc_v.drone_pos[1],
     #                                sc_v.drone_pos[2],
     #                                sc_v.drone_or[0], sc_v.drone_or[1],
     #                                sc_v.drone_or[2], sc_v.drone_or[3])
-
+    # #
     sync_cf.cf.extpos.send_extpos(sc_v.drone_pos[0], sc_v.drone_pos[1],
                                   sc_v.drone_pos[2])
-    # logging.debug("sent pose: %s %s",
-    #               str(sc_v.drone_pos), str(sc_v.drone_or))
+    logging.debug("sent pose: %s %s",
+                  str(sc_v.drone_pos), str(sc_v.drone_or))
 
     # Log to file
     vicon_matlab.write(sc_v.drone_pos[0], sc_v.drone_pos[1],

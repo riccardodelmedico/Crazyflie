@@ -1,7 +1,18 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20211221_112038.txt";
+name = "crazyfun__20220124_122522.txt";
+% crazyfun__20220124_121109, crazyfun__20220124_140955 test con correzioni e parametri default senza anelli 
+% crazyfun__20220124_121350 con correzioni di angolo e parametri di kalman
+% nostri
+% crazyfun__20220124_140634 test senza correzioni e con parametri di
+% default 
+% crazyfun__20220124_121702 definitivo
+
+% crazyfun__20220124_122329 test di rotazione 360 gradi con correzioni di
+% angolo e parametri di kalman nostri---> si schianta
+% crazyfun__20220124_122522 test di rotazione 360 gradi senza correzioni 
+
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
