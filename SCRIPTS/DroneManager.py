@@ -1,21 +1,18 @@
-import logging
-#from cflib.positioning.motion_commander import MotionCommander
-#from cflib.positioning.position_hl_commander import PositionHlCommander
 import math
 import threading
 import time
 import numpy as np
-from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
 from own_module import crazyfun as crazy, script_setup as sc_s, \
     script_variables as sc_v
 
-# il parametro box di inizializzazione definisce una virtual box all'interno
-# della quale il drone deve rimanere durante la guida, per motivi di sicurezza.
-# box[0]: limite su x positiva
-# box[1]: limite su x negativa
-# box[2]: limite su y positiva
-# box[3]: limite su y negativa
-# i limiti sono da intendere a partire dall'origine del world frame
+
+# box parameter defines a virtual box where crazyflie has to stay in order to
+# implement the guidance law for safety reasons.
+# box[0]: positive x boundary [m]
+# box[1]: negative x boundary [m]
+# box[2]: positive y boundary [m]
+# box[3]: negative y boundary [m]
+# limits are measured from world reference frame origin
 
 
 class DroneManager:
@@ -31,12 +28,13 @@ class DroneManager:
         self.velocity = np.array([])
         self.yawrate = np.array([])
         self.initial_orientation = np.array([])
-        self.flying =False
+        self.flying = False
         self.yaw = 0.0
         self.box = box
         self.vicon_thread = threading.Thread(target=crazy.repeat_fun,
                                              args=(crazy.vicon2drone_period,
-                                             crazy.pose_sending, self.scf))
+                                                   crazy.pose_sending,
+                                                   self.scf))
         self.datalog = crazy.datalog(self.scf)
 
     def set_value(self, string, value):
@@ -56,11 +54,10 @@ class DroneManager:
         self.initial_orientation = sc_s.vicon. \
             GetSegmentGlobalRotationEulerXYZ(sc_v.drone, sc_v.drone)[0]
 
-        print(f'Initial position[m]: x{self.position[0]}, y:{self.position[1]}'
+        print(f'Initial position [m]: x{self.position[0]}, y:{self.position[1]}'
               f' z{self.position[2]}')
-        print(f"initial yaw [degree] :{math.degrees(self.initial_orientation[2])}")
-
-        time.sleep(5)
+        print(
+            f"Initial yaw [degree]: {math.degrees(self.initial_orientation[2])}")
 
         self.scf.cf.param.set_value('kalman.initialX', float(self.position[0]))
         self.scf.cf.param.set_value('kalman.initialY', float(self.position[1]))
@@ -82,8 +79,8 @@ class DroneManager:
         self.take_off(vx, vy)
 
     def take_off(self, vx, vy):
-        # calcolo yaw in modo da essere orientato con asse x (body) nella
-        # direzione data da vx e vy
+        # yaw is computed in order to direct the x-body axis in the same
+        # direction of atan(vy, vx)
         yaw = math.atan2(vy, vx)
         yaw = math.degrees(yaw)
         vel_norm = np.linalg.norm(np.array([vx, vy]), 2)
@@ -94,12 +91,12 @@ class DroneManager:
                                                          i,
                                                          math.degrees(self.initial_orientation[2]))
             time.sleep(0.2)
-        print('decollo fatto')
-        #print(f'print dei valori degli angoli per l allineamento {math.degrees(self.initial_orientation[2])} , {yaw}')
+        print('Take-off done')
+
+        # redirecting yaw
         init_yaw_degree = math.degrees(self.initial_orientation[2])
         if init_yaw_degree < 0:
             init_yaw_degree += 360.0
-
         if init_yaw_degree - yaw > 0:
             align = np.arange(init_yaw_degree, yaw, -15)
         else:
@@ -110,9 +107,7 @@ class DroneManager:
                                                              self.position[1],
                                                              sc_v.DEFAULT_HEIGHT,
                                                              j)
-
                 time.sleep(0.1)
-        print('oriento lo yaw in modo da essere allineato')
         for i in range(10):
             self.scf.cf.commander.send_position_setpoint(self.position[0],
                                                          self.position[1],
@@ -121,20 +116,18 @@ class DroneManager:
             time.sleep(0.1)
         self.flying = True
         while not self.check_virtual_box():
-            self.scf.cf.commander.send_hover_setpoint(vel_norm, 0.0,
-                                                      0.0,
+            self.scf.cf.commander.send_hover_setpoint(vel_norm, 0.0, 0.0,
                                                       sc_v.DEFAULT_HEIGHT)
 
         self.get_state()
-        print('dentro v-box')
-        print(f'Guidance Velocity reached. Pos:{self.position}')
+        print('Inside Virtual Box')
 
     def get_state(self):
         crazy.callback_mutex.acquire(blocking=True)
         self.position = sc_v.pos_estimate[0:2]
         self.velocity = sc_v.vel_estimate[0:2]
         self.yaw = sc_v.pos_estimate[2]
-        self.yawrate =  sc_v.vel_estimate[2]
+        self.yawrate = sc_v.vel_estimate[2] / 1000
         crazy.callback_mutex.release()
 
     def check_virtual_box(self):
@@ -152,12 +145,11 @@ class DroneManager:
                 self.scf.cf.commander.send_hover_setpoint(vx, vy,
                                                           yawrate,
                                                           sc_v.DEFAULT_HEIGHT)
-
                 crazy.command_matlab.write(vx, vy, yawrate)
                 time.sleep(dt)
                 return True
             else:
-                print('out of Virtual Box')
+                print('Out of Virtual Box')
                 self.landing()
                 return False
 
@@ -174,26 +166,3 @@ class DroneManager:
                                                      -0.1, self.yaw)
         time.sleep(0.2)
         crazy.run = False
-
-    # def stop(self):
-    #     pass
-
-#
-# with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
-#     print('Main Start')
-#     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0)
-#     drone.start(0.0, 0.4)
-#     while drone.send_command(1.0, 0.0,  -0.25016528840485525):
-#         continue
-#     print('Main Finished')
-
-
-
-
-
-
-
-
-
-
-

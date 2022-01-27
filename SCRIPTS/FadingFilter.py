@@ -1,14 +1,16 @@
-import numpy  as np
-import math,random,time
+import numpy as np
+import math
+import random
+import time
 import matplotlib.pyplot as plt
 import target_class as t_c
-from vicon_dssdk import ViconDataStream
-from own_module import script_variables as sc_v, script_setup as sc_s
-import logging
+
 #Classe per creare un Fading filter per stimare misure fino al terzo ordine di veriabili misurate con dimensione 3
 # e con una temporizzazione definibile da costruttore
+
+
 class Fading_Filter:
-    def __init__(self,target, Nstd=3e-3 , Dimensions= 2, Order = 2, Beta = 0.5, dt= 0.05):
+    def __init__(self, target, Nstd=3e-3, Dimensions=2, Order=2, Beta=0.5, dt=0.05):
         self.order = Order
         self.dt = dt
         self.target = target
@@ -27,15 +29,15 @@ class Fading_Filter:
         self.time_line = 0
         if Order > 1:
            # self.list_vel = self.vel_est
-            self.G = 1 - math.pow( Beta, 2 )
-            self.H = math.pow((1 - Beta), 2 )
+            self.G = 1 - math.pow(Beta, 2)
+            self.H = math.pow((1 - Beta), 2)
 
-        if Order >2:
+        if Order > 2:
             self.acc_est = np.zeros(3, dtype='float')
            # self.list_acc = self.acc_est
-            self.G = 1 - math.pow((1 - Beta), 3 )
-            self.H = 1.5 * math.pow((1 - Beta), 2 )*(1 + Beta)
-            self.K = 0.5 * math.pow((1 - Beta), 3 )
+            self.G = 1 - math.pow((1 - Beta), 3)
+            self.H = 1.5 * math.pow((1 - Beta), 2)*(1 + Beta)
+            self.K = 0.5 * math.pow((1 - Beta), 3)
             self.real_acc = 0
             self.list_acc = 0
 
@@ -50,24 +52,25 @@ class Fading_Filter:
         #    return False
 
         else:
-            (p,v,a,time) = self.target.get_target()
+            (p, v, a, time) = self.target.get_target()
             #print(p,v,a)
-            self.pos_est = initial_estimation[0,:]
-            self.list_pos = self.pos_est.reshape((1,3))
-            self.real_pos = p.reshape((1,3))
-            self.vel_est = initial_estimation[1,:]
-            self.list_vel = self.vel_est.reshape((1,3))
-            self.real_vel = v.reshape((1,3))
+            self.pos_est = initial_estimation[0, :]
+            self.list_pos = self.pos_est.reshape((1, 3))
+            self.real_pos = p.reshape((1, 3))
+            self.vel_est = initial_estimation[1, :]
+            self.list_vel = self.vel_est.reshape((1, 3))
+            self.real_vel = v.reshape((1, 3))
 
             if self.order == 3:
-                self.acc_est = initial_estimation[2,:]
-                self.list_acc = self.acc_est.reshape((1,3))
-                self.real_acc = a.reshape((1,3))
+                self.acc_est = initial_estimation[2, :]
+                self.list_acc = self.acc_est.reshape((1, 3))
+                self.real_acc = a.reshape((1, 3))
             return True
+
     #aggiorna le stime con la nuova misura
     def compute(self, measure):
         if measure.shape[0] != self.pos_est.shape[0]:
-            print('Incorret Dimension of Measure Tensor')
+            print('Incorrect Dimension of Measure Tensor')
             return False
 
         if type(self.list_pos).__module__ != np.__name__ :
@@ -96,8 +99,10 @@ class Fading_Filter:
         self.list_vel = np.concatenate((self.list_vel, self.vel_est.reshape(1, 3)), axis=0)
 
         return True
-    #aggiorna le variabili reali per utilizzarle nel plot finale in modo da confrontarle con le stime
-    def add_real_quantities(self,p,v,a):
+
+    # aggiorna le variabili reali per utilizzarle nel plot finale in modo da
+    # confrontarle con le stime
+    def add_real_quantities(self, p, v, a):
         if type(self.real_pos).__module__ != np.__name__ :
             print('Not Initialized Real Quantities')
             return False
@@ -106,6 +111,7 @@ class Fading_Filter:
         if self.order == 3:
             self.real_acc = np.concatenate((self.real_acc, a.reshape(1, 3)), axis=0)
         return True
+
     # ritorna le stime ed aggiorna la sua temporizzazione
     def get_estimation(self):
         (p, v, a, time) = self.target.get_target()
@@ -120,7 +126,7 @@ class Fading_Filter:
         if self.order == 3:
             return self.pos_est, self.vel_est, self.acc_est
         else:
-            return self.pos_est,self.vel_est
+            return self.pos_est, self.vel_est
 
     def start(self):
         self.time_line = np.array([time.time()])
@@ -136,22 +142,23 @@ class Fading_Filter:
         # self.real_pos= self.real_pos[0: self.list_pos.shape[0]-1]
         print(self.real_pos.shape[0], self.list_pos.shape[0],
               self.time_line.shape[0])
+
     def plot_Filter(self):
-        legend=np.array([['px','py','pz'],['vx','vy','vz'],['ax','ay','az']])
-        sp, ax = plt.subplots(3,2)
+        legend = np.array([['px', 'py', 'pz'], ['vx', 'vy', 'vz'], ['ax', 'ay', 'az']])
+        sp, ax = plt.subplots(3, 2)
         sp.suptitle('Estimation vs Real Position')
         for i in range(3):
-            ax[i,0].plot(self.time_line,self.real_pos[:,i],'-g',label=f'real {legend[0,i]}')
-            ax[i,0].legend()
-            ax[i,0].plot(self.time_line,self.list_pos[:,i],'--b',label=f'estimate {legend[0,i]}')
-            ax[i,0].legend()
-            error= self.list_pos[:,i]-self.real_pos[:,i]
-            ax[i,1].plot(self.time_line,error,'-r',label=f'{legend[0,i]} error')
+            ax[i, 0].plot(self.time_line, self.real_pos[:, i], '-g', label=f'real {legend[0,i]}')
+            ax[i, 0].legend()
+            ax[i, 0].plot(self.time_line, self.list_pos[:, i], '--b', label=f'estimate {legend[0,i]}')
+            ax[i, 0].legend()
+            error = self.list_pos[:, i]-self.real_pos[:, i]
+            ax[i, 1].plot(self.time_line, error, '-r', label=f'{legend[0,i]} error')
             ax[i, 1].legend()
         plt.show()
 
         if not self.target.wand:
-            sp, ax = plt.subplots(3,2)
+            sp, ax = plt.subplots(3, 2)
             sp.suptitle('Estimation vs Real Velocity')
             for i in range(3):
                 ax[i,0].plot(self.time_line, self.real_vel[:,i], '-r',label=f'real {legend[1,i]}')
@@ -186,41 +193,6 @@ class Fading_Filter:
                 sp, ax = plt.subplots(3,1)
                 sp.suptitle('Estimation vs Real Acceleration')
                 for i in range(3):
-                    ax[i].plot(self.time_line, self.list_acc[:,i], '--b',label=f'estimate {legend[2,i]}')
+                    ax[i].plot(self.time_line, self.list_acc[:, i], '--b', label=f'estimate {legend[2,i]}')
                     ax[i].legend()
             plt.show()
-
-# print('inizializzo il vettore delle posizioni iniziali a zero')
-# in_p = np.zeros(3)
-# while  len(np.argwhere(in_p == 0.0)) == 3:
-#     try:
-#         sc_s.vicon.GetFrame()
-#     except ViconDataStream.DataStreamException as exc:
-#         logging.error("Error while getting a frame in the core! "
-#                       "--> %s", str(exc))
-#
-#         # Get current drone position and orientation in Vicon
-#     sc_v.wand_pos = sc_s.vicon. \
-#         GetSegmentGlobalTranslation(sc_v.Wand, "Root")[0]
-#
-#     # Converts in meters
-#
-#
-#     in_p = np.array([float(sc_v.wand_pos[0] / 1000),
-#                      float(sc_v.wand_pos[1] / 1000),
-#                      float(sc_v.wand_pos[2] / 1000)])
-# print("terminata l'inizializzaizone reale")
-# delta = 0.2
-# # in_p= np.array([1.0,1.0,0.5])
-# in_v = np.array([0.0,0.0,0.0])
-# in_a = np.zeros(3)
-# tg= t_c.target(initial_position=in_p,initial_velocity=in_v,initial_acceleration_module=in_a,dt=0.1,use_wand_target=True)
-# ff = Fading_Filter(tg,Nstd=0,Beta=0.5,Order=3,dt= delta)
-#
-# ff.initial(initial_estimation=np.array([in_p,in_v,in_a]))
-# ff.start()
-# for i in range(50):
-#     ff.get_estimation()
-#     time.sleep(delta)
-# ff.stop()
-# ff.plot_Filter()
