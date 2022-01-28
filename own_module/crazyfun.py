@@ -672,12 +672,12 @@ signal.signal(signal.SIGTERM, handler_stop_signal)
 
 # Istances of the MatlabPrint classes with relative logfile creation
 vicon_matlab = MatlabPrint(flag=0)
-set_matlab = MatlabPrint(flag=1)
+#set_matlab = MatlabPrint(flag=1)
 int_matlab = MatlabPrint(flag=2)
 wand_matlab = MatlabPrint(flag=3)
-command_matlab = MatlabPrint(flag= 4)
-guidance_matlab =MatlabPrint(flag= 5)
-command_matlab.write(0,0,0)
+command_matlab = MatlabPrint(flag=4)
+guidance_matlab = MatlabPrint(flag=5)
+command_matlab.write(0, 0, 0)
 safety_offset = 0.3
 time_limit = 60  # [s]
 tracking = True
