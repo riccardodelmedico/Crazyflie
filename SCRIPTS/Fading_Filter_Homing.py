@@ -120,10 +120,10 @@ class FadingFilterHoming:
 
         next_homing_dot_est = self.homing_dot_est + (self.H / self.dt) * (
                 homing_measured - tmp)
-        next_homing_dot_est[0] = 1 / 2 * self.los_rate[-1] + 1 / 2 * \
-                                 next_homing_dot_est[0]
-        next_homing_dot_est[1] = 1 / 2 * self.r_rate[-1] + 1 / 2 * \
-                                 next_homing_dot_est[1]
+        # next_homing_dot_est[0] = 1 / 2 * self.los_rate[-1] + 1 / 2 * \
+        #                          next_homing_dot_est[0]
+        # next_homing_dot_est[1] = 1 / 2 * self.r_rate[-1] + 1 / 2 * \
+        #                          next_homing_dot_est[1]
         self.homing_dot_est = next_homing_dot_est
 
         # print(f' [measures]: sigma:{homing_measured[0]} R:{homing_measured[1]}')

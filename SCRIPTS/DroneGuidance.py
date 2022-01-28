@@ -247,7 +247,8 @@ def sim_APNG_guidance_filtered(pursuer,dt,N):
     #     pursuer.v += target.target.omega_vers_hat.dot(pursuer.v/np.linalg.norm(pursuer.v,2))* Ac* deltat
     # pursuer.list_pos = np.concatenate((pursuer.list_pos,pursuer.p.reshape((1,3))),axis=0)
 
-def sim_APNG_guidance_filtered_comp(pursuer,dt,N):
+
+def sim_APNG_guidance_filtered_comp(pursuer, dt, N):
     # get the target position and velocity to calculate R Vc and \dot{Sigma}
     (t_pos, t_vel, t_acc) = pursuer.target.get_estimation()
     pursuer.drone.get_state()
@@ -255,7 +256,7 @@ def sim_APNG_guidance_filtered_comp(pursuer,dt,N):
     (homing_guidance, homing_guidance_dot, los_rate) = pursuer.homing_ff.get_estimation(
         pursuer.drone.position, math.radians(pursuer.drone.yaw),
         pursuer.drone.yawrate)
-    pursuer.homing_ff.list_homing_dot[-1,0] += pursuer.drone.yawrate
+    pursuer.homing_ff.list_homing_dot[-1, 0] += pursuer.drone.yawrate
     cos_yaw = math.cos(math.radians(pursuer.drone.yaw))
     sin_yaw = math.sin(math.radians(pursuer.drone.yaw))
     rot_yaw = np.array([[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]])
@@ -284,12 +285,12 @@ def sim_APNG_guidance_filtered_comp(pursuer,dt,N):
     # append these values to numpy to plot at the end their behavior on time
     pursuer.dotSigma = np.append(pursuer.dotSigma, np.array([dotSigma]))
     pursuer.Vc = np.append(pursuer.Vc, np.array([Vc]))
-    R_v = np.append(t_pos[0:2]-pursuer.drone.position[0:2],0)/R
+    R_v = np.append(t_pos[0:2]-pursuer.drone.position[0:2], 0) / R
 
-    Ort_R = pursuer.target.target.omega_vers_hat.dot(R_v)
-
-    AcAPNG = np.transpose(Ort_R).dot(t_acc)/math.cos(sigma)
-    AcAPNG_vett= AcAPNG*Ort_R
+    # Ort_R = pursuer.target.target.omega_vers_hat.dot(R_v)
+    #
+    # AcAPNG = np.transpose(Ort_R).dot(t_acc)/math.cos(sigma)
+    # AcAPNG_vett= AcAPNG*Ort_R
 
     N_tv = N / math.cos(sigma - math.radians(pursuer.drone.yaw))
     # calculate PNG acceleration
@@ -302,7 +303,11 @@ def sim_APNG_guidance_filtered_comp(pursuer,dt,N):
     elif omega < -120:
         omega = -120
     # crazy.guidance_matlab.write(t_pos[0], t_pos[1], R, Vc, dotSigma)
-    crazy.guidance_matlab.write(t_pos[0], t_pos[1], R, Vc, dotSigma, sigma)
+    crazy.guidance_matlab.write(t_pos[0], t_pos[1], R, Vc, dotSigma, sigma,
+                                homing_guidance[0] + math.radians(pursuer.drone.yaw), homing_guidance[1],
+                                homing_guidance_dot[0] + pursuer.drone.yawrate,
+                                homing_guidance_dot[1])
+
     pursuer.send_command(pursuer.v, 0.0, omega, dt=dt)
     pursuer.list_pos = np.concatenate(
         (pursuer.list_pos, pursuer.drone.position.reshape((1, 2))), axis=0)
@@ -377,8 +382,8 @@ class DroneGuidance:
        self.update_thread.join()
        self.target.stop()
 
-    def send_command(self, vx, vy, omega, dt= 0.05):
-        self.drone.send_command(vx, vy, omega,dt)
+    def send_command(self, vx, vy, omega, dt=0.05):
+        self.drone.send_command(vx, vy, omega, dt)
 
     def plot_chase(self):
         self.list_pos = self.list_pos[1:-1,:]
@@ -427,8 +432,8 @@ class DroneGuidance:
         plt.figure(1)
         plt.title('Derivative of Line of Sight')
         plt.plot(self.time_line, self.dotSigma[:], 'b-')
-        plt.plot(self.time_line,self.homing_ff.list_homing_dot[1:,0],'r-')
-        plt.plot(self.time_line, self.homing_ff.los_rate[1:] + self.homing_ff.gamma_dot[1:], 'g-')
+        plt.plot(self.time_line, self.homing_ff.list_homing_dot[1:,0], 'r-')
+        # plt.plot(self.time_line, self.homing_ff.los_rate[1:] + self.homing_ff.gamma_dot[1:], 'g-')
         plt.show()
         plt.figure(2)
         plt.title('Closing Velocity')
@@ -477,11 +482,11 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
                           dt=0.1, use_wand_target=True)
     ff = Fading_Filter(target, Nstd=0, Dimensions=2, Order=3, Beta=0.5,
                        dt=delta)
-    hff = FadingFilterHoming(target, chase_vel=vc, std=0, beta=0.001, dt=delta)
+    hff = FadingFilterHoming(target, chase_vel=vc, std=3e-3, beta=0.1, dt=delta)
     ff.initial(np.array([in_p, in_v, in_a]))
 
     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,
-                         box=np.array([1.0, -1.8, 2.0, -0.5]))
+                         box=np.array([1.5, -1.8, 2.0, -0.8]))
 
     guidance = DroneGuidance(hff, comp, ff, drone,
                              guidance_velocity=vc,

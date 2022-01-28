@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220127_160354.txt";
+name = "crazyfun__20220128_100815.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -49,6 +49,9 @@ guidance_r = guidance_data(:,3);
 guidance_vc = guidance_data(:,4);
 guidance_sigma_dot = guidance_data(:,5);
 guidance_sigma = guidance_data(:, 6);
+fading_sigma = guidance_data(:, 7);
+fading_sigma_dot = guidance_data(:, 9);
+
 guidance_time = datetime(guidance_data(:,end), 'ConvertFrom', 'datenum');
 
 command_yawrate = command_data(:,3);
@@ -115,6 +118,7 @@ subplot(4,1,3)
 hold on
 grid on
 plot(guidance_time, guidance_sigma_dot, 'r ')
+plot(guidance_time, fading_sigma_dot*0.3, 'b')
 ylabel("[rad/s]")
 title("LOS angle derivative")
 
@@ -122,6 +126,7 @@ subplot(4,1,4)
 hold on
 grid on
 plot(guidance_time, guidance_sigma, 'r ')
+plot(guidance_time, fading_sigma, 'b')
 ylabel("[rad]")
 title("LOS angle")
 
