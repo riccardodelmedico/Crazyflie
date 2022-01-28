@@ -4,7 +4,7 @@ import time
 import numpy as np
 import Target as tar_c
 import matplotlib.pyplot as plt
-import Fading_Filter_Homing as FFH
+#import Fading_Filter_Homing as FFH
 from own_module import crazyfun
 from own_module import script_variables as sc_v
 from own_module import script_setup as sc_s

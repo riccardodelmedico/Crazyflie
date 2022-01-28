@@ -1,30 +1,22 @@
-import logging
 import math
 from Model_Identify import Model_Compensation
-import threading
-import time
 import numpy as np
-from DroneManager import DroneManager
-from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
-# from cflib.positioning.motion_commander import MotionCommander
-from cflib.positioning.position_hl_commander import PositionHlCommander
-from own_module import crazyfun as crazy, script_setup as sc_s, \
-    script_variables as sc_v
-#from vicon_dssdk import ViconDataStream
-import Target as tar_c
 import matplotlib.pyplot as plt
 
 
-def chirp(t, f1, f0, T):
-    c = (f1 - f0)/T
-    return c*t * math.sin(2*math.pi*(c/2*t*t))
+def chirp(t, f1, f0, period):
+    c = (f1 - f0)/period
+    return c*t * math.sin(2*math.pi*(c/2*period*period))
+
 def step(t,val_ini,val_fin,T):
     if(t<T/2):
         return val_ini
     else:
         return val_fin
+
 def ramp(t,m):
     return t*m
+
 #50*c*t *
 # #
 # x = np.arange(0,10,0.001)

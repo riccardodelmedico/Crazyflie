@@ -1,20 +1,14 @@
 import numpy as np
 import math
-import random
-import time
-import matplotlib.pyplot as plt
-import Target as t_c
 
 
 class FadingFilter:
-    def __init__(self, nstd=3e-3, dimensions=2, order=2, beta=0.5, dt=0.05):
+    def __init__(self, dimensions=1, order=2, beta=0.5):
         self.order = order
-        self.dt = dt
         self.dim = dimensions
-        self.std = nstd
         if order < 1 or order > 3:
-            print('It is not possible create a filter with this order')
-            return 0
+            raise "Order of Fading Filter must be between 1 and 3."
+        self.old_t = 0
         self.x_est = np.zeros(dimensions)
         self.x_dot_est = np.zeros(dimensions)
         self.time_line = 0
@@ -33,12 +27,11 @@ class FadingFilter:
             self.k = 0.5 * math.pow((1 - beta), 3)
 
     # Filter initialization with the available measure
-    def initialization(self, initial_estimation):
+    def init(self, initial_estimation, initial_time):
         if initial_estimation.shape[0] != self.order or \
                 initial_estimation.shape[1] != self.x_est.shape[0]:
             print('Incorrect Dimension of Initial Estimate Variable Tensor')
             return False
-
         else:
             if self.order >= 1:
                 self.x_est = initial_estimation[0, :]
@@ -46,34 +39,37 @@ class FadingFilter:
                     self.x_dot_est = initial_estimation[1, :]
                     if self.order == 3:
                         self.x_ddot_est = initial_estimation[3, :]
+            self.old_t = initial_time
 
-    def compute(self, measure):
+    # Update step of the Fading Filter depending on its order
+    # timestamp: time at which the measure are obtained; it's used for computing deltaT of the filter
+    def update(self, measure, timestamp):
         if measure.shape[0] != self.x_est.shape[0]:
             print('Incorrect Dimension of Measure Tensor')
             return False
-
+        dt = timestamp - self.old_t
+        self.old_t = timestamp
         if self.order == 1:
             x_est_next = self.x_est + self.g * (measure - self.x_est)
+            self.x_est = x_est_next
+            return self.x_est
 
         if self.order == 2:
-            tmp = self.x_est + self.dt * self.x_dot_est
-            x_est_next = tmp + self.g * (measure - tmp)
-            x_dot_est_next = self.x_dot_est + (self.h / self.dt) * (
+            tmp = self.x_est + dt * self.x_dot_est
+            self.x_est = tmp + self.g * (measure - tmp)
+            x_dot_est_next = self.x_dot_est + (self.h / dt) * (
                         measure - tmp)
+            self.x_dot_est = x_dot_est_next
+            return self.x_est, self.x_dot_est
 
         if self.order == 3:
-            tmp = self.x_est + self.dt * self.x_dot_est + 0.5 * self.x_ddot_est * math.pow(
-                self.dt, 2)
-            x_est_next = tmp + self.g * (measure - tmp)
-            x_dot_est_next = self.x_dot_est + self.dt * self.x_ddot_est + (
-                        self.h / self.dt) * (measure - tmp)
+            tmp = self.x_est + dt * self.x_dot_est + 0.5 * self.x_ddot_est * math.pow(
+                dt, 2)
+            self.x_est = tmp + self.g * (measure - tmp)
+            x_dot_est_next = self.x_dot_est + dt * self.x_ddot_est + (
+                        self.h / dt) * (measure - tmp)
             x_ddot_est_next = self.x_ddot_est + (
-                        (2 * self.k) / math.pow(self.dt, 2)) * (measure - tmp)
-
+                        (2 * self.k) / math.pow(dt, 2)) * (measure - tmp)
+            self.x_dot_est = x_dot_est_next
             self.x_ddot_est = x_ddot_est_next
-
-        self.x_est = x_est_next
-        self.x_dot_est = x_dot_est_next
-
-        return x_est_next, x_dot_est_next, x_ddot_est_next
-
+            return self.x_est, self.x_dot_est, self.x_ddot_est
