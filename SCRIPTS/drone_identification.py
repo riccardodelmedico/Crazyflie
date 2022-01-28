@@ -11,7 +11,7 @@ from cflib.positioning.position_hl_commander import PositionHlCommander
 from own_module import crazyfun as crazy, script_setup as sc_s, \
     script_variables as sc_v
 #from vicon_dssdk import ViconDataStream
-import target_class as tar_c
+import Target as tar_c
 import matplotlib.pyplot as plt
 
 

@@ -7,6 +7,7 @@ from own_module import crazyfun as crazy
 from vicon_dssdk import ViconDataStream
 from own_module import script_variables as sc_v, script_setup as sc_s
 
+
 def update_virtual_target(obj_target,dt=0.05):
     # integrate velociticy and acceleration with forward euler
     obj_target.mutex.acquire(True)
@@ -24,6 +25,7 @@ def update_virtual_target(obj_target,dt=0.05):
     obj_target.mutex.release()
     if not crazy.run:
         print('Extra Run')
+
 def  update_wand_target(obj_target):
     try:
         sc_s.vicon.GetFrame()
@@ -46,8 +48,9 @@ def  update_wand_target(obj_target):
     if not crazy.run:
         print('Extra Run')
 
-class target():
-    def __init__(self, initial_position=np.array([0.0, 0.0, 0.5]),
+
+class Target():
+    def init(self, initial_position=np.array([0.0, 0.0, 0.5]),
                  initial_velocity=np.array([0.0, 0.0, 0.0]),
                  initial_acceleration_module = 0,
                  dt=0.05,use_wand_target=False):#np.array([0.0, 0.0, 0.0])):
@@ -69,7 +72,7 @@ class target():
 
     def initial_wand(self, in_p):
         if self.wand:
-            self.p = in_p
+            self.p= in_p
 
     def get_target(self):
         self.mutex.acquire(True)
@@ -95,6 +98,3 @@ class target():
         print('Stopping Target Thread')
         crazy.run = False
         self.update_thread.join()
-  
-
-

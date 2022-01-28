@@ -2,7 +2,7 @@ import math
 import threading
 import time
 import numpy as np
-import target_class as tar_c
+import Target as tar_c
 import matplotlib.pyplot as plt
 import Fading_Filter_Homing as FFH
 from own_module import crazyfun
