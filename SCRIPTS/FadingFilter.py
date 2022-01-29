@@ -34,11 +34,11 @@ class FadingFilter:
             return False
         else:
             if self.order >= 1:
-                self.x_est = initial_estimation[0, :]
+                self.x_est = initial_estimation
                 if self.order >= 2:
                     self.x_dot_est = initial_estimation[1, :]
                     if self.order == 3:
-                        self.x_ddot_est = initial_estimation[3, :]
+                        self.x_ddot_est = initial_estimation[2, :]
             self.old_t = initial_time
 
     # Update step of the Fading Filter depending on its order

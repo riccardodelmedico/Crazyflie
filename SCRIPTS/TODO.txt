@@ -11,4 +11,4 @@ TODO: 1) conversione delle misure della vleocità da body a world da fare in Dro
 TODO: regole di programmazione
       -> nomi variabili minuscole, classi con nome che seguano CamelCase, nomi file delle classi corrispondenti al nome
          della classe stessa, commenti a inizio file e idelamente per ogni funzione riguardo a input e output
-      -> scrivere i commenti e nomi in inglesi
+      -> scrivere i commenti e nomi in inglese

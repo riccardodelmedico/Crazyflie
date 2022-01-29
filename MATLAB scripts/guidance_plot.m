@@ -5,7 +5,7 @@ name = "crazyfun__20220128_100815.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
-internal = fullfile(path, '..\internal_data\', name);
+internal = fullfile(path, '../internal_data/', name);
 guidance = fullfile(path, '..\guidance_data\', name);
 command = fullfile(path, '..\command_data\', name);
 delimiterIn = ' ';
