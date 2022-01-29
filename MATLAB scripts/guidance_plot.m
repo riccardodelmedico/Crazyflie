@@ -39,37 +39,28 @@ clear current_file delimiterIn headerlinesIn name path
 %% Data extraction
 int_px = internal_data(:,1);            % \
 int_py = internal_data(:,2);            %  |-> internal estimate of drone position
-int_yaw = internal_data(:,3);            % /
+int_yaw = internal_data(:,3);           % /
 int_yawrate = internal_data(:,6);
 int_time = datetime(internal_data(:,end), 'ConvertFrom', 'datenum');
 
 target_px = guidance_data(:,1);
 target_py = guidance_data(:,2);
 guidance_r = guidance_data(:,3);
-guidance_vc = guidance_data(:,4);
-guidance_sigma_dot = guidance_data(:,5);
-guidance_sigma = guidance_data(:, 6);
-fading_sigma = guidance_data(:, 7);
-fading_sigma_dot = guidance_data(:, 9);
-
-guidance_time = datetime(guidance_data(:,end), 'ConvertFrom', 'datenum');
+guidance_sigma = guidance_data(:, 4);
+guidance_r_dot = guidance_data(:, 5);
+guidance_sigma_dot = guidance_data(:, 6);
+fading_r = guidance_data(:, 7);
+fading_sigma = guidance_data(:, 8);
+fading_r_dot = guidance_data(:, 9);
+fading_sigma_dot = guidance_data(:, 10);
+guidance_time = datetime(guidance_data(:, 11), 'ConvertFrom', 'datenum');
 
 command_yawrate = command_data(:,3);
 command_time = datetime(command_data(:,end), 'ConvertFrom', 'datenum');
 
 clear vicon_data internal_data
 
-%% yawrate commanded test
-% hold on 
-% grid on 
-% plot(int_time,- int_yawrate*(18/(pi*100)))
-% plot(command_time, command_yawrate)
-% hold off 
-% grid off
-
-%plot(int_time,int_yaw)
 %% Guidance Module
-
 % Pursuer-Target trajectories plot
 if exist('figure2') == 0  %#ok<*EXIST>
     figure('name', "2D visualization in Vicon reference system")
@@ -90,45 +81,53 @@ plot(int_px, int_py, '-b')
 legend("Target Position", "Internal Drone Position")
 title("Vicon reference system")
 
-%% Yaw Rate Response
-
-
-%% Guidance quantities plot 
+%% Range and Closing velocity plot: 
+%  comparison between closed form solution and fading filter
 if exist('figure2') == 0  %#ok<*EXIST>
-    figure('name', "Guidance Quantities Plot")
+    figure('name', "Range(R) and Closing Velocity (Vc)")
 else
-    figure2('name', "Guidance Quantities Plot")
+    figure2('name', "Range(R) and Closing Velocity (Vc)")
 end
 
-subplot(4,1,1)
+subplot(2,1,1)
 hold on
 grid on
-plot(guidance_time, guidance_r, 'r ')
+plot(guidance_time, guidance_r, 'r')
+plot(guidance_time, fading_r, 'b--')
 ylabel("[m]")
 title("Pursuer-Target Distance")
 
-subplot(4,1,2)
+subplot(2,1,2)
 hold on
 grid on
-plot(guidance_time, guidance_vc, 'r ')
+plot(guidance_time, -guidance_r_dot, 'r ')
+plot(guidance_time, -fading_r_dot, 'b--')
 ylabel("[m/s]")
 title("Closing Velocity")
 
-subplot(4,1,3)
-hold on
-grid on
-plot(guidance_time, guidance_sigma_dot, 'r ')
-plot(guidance_time, fading_sigma_dot*0.3, 'b')
-ylabel("[rad/s]")
-title("LOS angle derivative")
+%% LOS and LOS rate plot: 
+%  comparison between closed form solution and fading filter
+if exist('figure2') == 0  %#ok<*EXIST>
+    figure('name', "LOS (sigma) and LOS rate (sigma_dot)")
+else
+    figure2('name', "LOS (sigma) and LOS rate (sigma_dot)")
+end
 
-subplot(4,1,4)
+subplot(2,1,1)
 hold on
 grid on
 plot(guidance_time, guidance_sigma, 'r ')
-plot(guidance_time, fading_sigma, 'b')
+plot(guidance_time, fading_sigma, 'b--')
 ylabel("[rad]")
 title("LOS angle")
+
+subplot(2,1,2)
+hold on
+grid on
+plot(guidance_time, guidance_sigma_dot, 'r ')
+plot(guidance_time, fading_sigma_dot, 'b--')
+ylabel("[rad/s]")
+title("LOS angle derivative")
 
 
 

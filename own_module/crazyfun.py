@@ -2,7 +2,6 @@ from __future__ import print_function
 import logging
 import os
 import time
-import numpy as np
 import math
 from pytictoc import TicToc
 from datetime import datetime, timedelta
@@ -17,6 +16,7 @@ import threading
 
 t = TicToc()
 first_iter = True
+
 
 def datetime2matlabdatenum(dt):
     """
@@ -113,6 +113,7 @@ def print_callback_guidance(timestamp, data, log_conf):
     # Print state estimate to file
     int_matlab.write(pos_x, pos_y, yaw, v_x, v_y, yaw_rate)
     # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
+
 
 def datalog_async(sync_crazyflie, log_conf):
     """
@@ -471,7 +472,7 @@ class MatlabPrint:
             2: "internal_data",
             3: "wand_data",
             4: "command_data",
-            5 : "guidance_data"
+            5: "guidance_data"
         }
 
         folder = print_type.get(flag, "Unmanaged")
@@ -577,60 +578,6 @@ class MatlabPrint:
             if index >= 3:
                 break
         return point
-
-
-###################################################################
-# Extra functions for incomplete scripts
-def check_obstacle(poscom):
-    logging.info("Getting object setpoint...")
-    obj_pos = sc_s.vicon. \
-        GetSegmentGlobalTranslation('Obstacle', 'OneMarker')[0]
-
-    dist_array = np.array(sc_v.drone_pos - obj_pos)
-
-    theta_ver = math.atan2(dist_array[2], dist_array[0])
-    theta_hor = math.atan2(dist_array[1], dist_array[0])
-
-    # if it's not the first time the object has been registered
-    if len(tv_prec) and len(th_prec):
-        ver_warning = (0 < theta_ver < tv_prec[-1]) or \
-                      (0 > theta_ver > tv_prec[-1])
-        hor_warning = (0 < theta_hor < th_prec[-1]) or \
-                      (0 > theta_hor > th_prec[-1])
-
-        if ver_warning and hor_warning and \
-                (np.linalg.norm(dist_array) <= safety_threshold):
-            avoid(poscom, dist_array)
-
-    tv_prec.append(theta_ver)
-    th_prec.append(theta_hor)
-
-
-def avoid(vehicle, dist):
-    """
-    Computes the direction the drone has to move to avoid the incoming
-    obstacle.
-
-    :param vehicle: Drone's commander.
-    :type vehicle: PositionHLCommander
-    :param dist: 3D array containing the drone-obstacle distance.
-    :type dist: numpy.array
-    :return: None.
-    :rtype: None
-    """
-
-    movement = sc_v.drone_pos
-
-    # Decide which 3D coordinate to change
-    direction = min(dist)
-    ind = dist.index(direction)
-
-    # Update the coordinate
-    movement[ind] += -1 * sign(direction) * 0.3
-
-    # Move the Crazyflie
-    vehicle.go_to(movement[0], movement[1], movement[2])
-###################################################################
 
 
 # Global variables used
