@@ -7,7 +7,7 @@ class FadingFilter:
         self.order = order
         self.dim = dimensions
         if order < 1 or order > 3:
-            raise "Order of Fading Filter must be between 1 and 3."
+            raise Exception("Order of Fading Filter must be between 1 and 3.")
         self.old_t = 0
         self.x_est = np.zeros(dimensions)
         self.x_dot_est = np.zeros(dimensions)
@@ -34,12 +34,15 @@ class FadingFilter:
             return False
         else:
             if self.order >= 1:
-                self.x_est = initial_estimation
+                self.x_est = initial_estimation[0, :]
                 if self.order >= 2:
                     self.x_dot_est = initial_estimation[1, :]
                     if self.order == 3:
                         self.x_ddot_est = initial_estimation[2, :]
             self.old_t = initial_time
+
+            # print(f'x_est_ini: {self.x_est}, dot_x_est_ini {self.x_dot_est}')
+
 
     # Update step of the Fading Filter depending on its order
     # timestamp: time at which the measure are obtained; it's used for computing deltaT of the filter
@@ -48,6 +51,7 @@ class FadingFilter:
             print('Incorrect Dimension of Measure Tensor')
             return False
         dt = timestamp - self.old_t
+        # print(f'timestamp :{timestamp}, dt : {dt}')
         self.old_t = timestamp
         if self.order == 1:
             x_est_next = self.x_est + self.g * (measure - self.x_est)

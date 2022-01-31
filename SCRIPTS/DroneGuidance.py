@@ -9,11 +9,9 @@ from own_module import crazyfun as crazy, script_setup as sc_s, \
     script_variables as sc_v
 from vicon_dssdk import ViconDataStream
 
-
-
-
+t1=t2=0
 def compute_sigma(pursuer_pos, target_pos):
-    r_v = pursuer_pos[0:2] - target_pos[0:2]
+    r_v =   target_pos[0:2] -pursuer_pos[0:2]
     sigma = math.atan2(r_v[1], r_v[0])
     if sigma < 0:
         sigma += 2 * math.pi
@@ -28,7 +26,7 @@ def compute_sigma_dot(pursuer_pos, pursuer_vel, target_pos, target_vel, r):
 
 
 def compute_r(pursuer_pos, target_pos):
-    r_v = pursuer_pos[0:2] - target_pos[0:2]
+    r_v =  target_pos[0:2] - pursuer_pos[0:2]
     r = np.linalg.norm(r_v, 2)
     return r
 
@@ -71,12 +69,15 @@ def rot_z(yaw, radians=False):
 
 def guidance_png(guidance, n, dt, r_interception):
     # get the state of target
-    (tar_pos, _, _, tar_time) = guidance.target.get_state()
-    
-    # evaluate the estimation of target quantities
-    (est_t_pos, est_t_vel, ext_t_acc) = guidance.target_ff.update(tar_pos, tar_time)
 
+    (tar_pos, _, _, tar_time) = guidance.target.get_state()
+
+    # evaluate the estimation of target quantities
+    (est_t_pos, est_t_vel, _) = guidance.target_ff.update(tar_pos, tar_time)
+    # print(f'target_time: {tar_time}')
+    # print(f'target estimated Velocity : {est_t_vel}')
     # get the state of drone in world frame
+
     guidance.drone.get_state()
     rot_yaw = rot_z(guidance.drone.yaw)
     guidance.drone.velocity = rot_yaw.dot(guidance.drone.velocity)
@@ -93,8 +94,8 @@ def guidance_png(guidance, n, dt, r_interception):
         print(f"R value at interception: {r}")
         guidance.drone.landing()
     # get guidance quatities estimation 
-    (est_r, est_dot_r) = guidance.r_ff.update(r, tar_time)
-    (est_sigma, est_dot_sigma) = guidance.sigma_ff.update(sigma, tar_time)
+    (est_r, est_dot_r) = guidance.r_ff.update(np.array([r]), tar_time)
+    (est_sigma, est_dot_sigma) = guidance.sigma_ff.update(np.array([sigma]), tar_time)
 
     # conversion from python time to MATLAB time
     matlab_time = datetime.datetime.fromtimestamp(tar_time)
@@ -102,27 +103,25 @@ def guidance_png(guidance, n, dt, r_interception):
 
     # write in Log [closed_form quantities, estimated quantities and the time of data acquisition]
     crazy.guidance_matlab.write(tar_pos[0], tar_pos[1], r, sigma, r_dot, sigma_dot,
-                                est_r, est_sigma, est_dot_r, est_dot_sigma, matlab_time)
+                                est_r[0], est_sigma[0], est_dot_r[0], est_dot_sigma[0], matlab_time)
 
     n_tv = n / math.cos(sigma - math.radians(guidance.drone.yaw))
     # calculate PNG acceleration with closed form quantities
-    acc = - n_tv * (r_dot * sigma_dot)  # + AcAPNG/2)
+    acc = - n * (r_dot * sigma_dot)  # + AcAPNG/2)
     omega = - math.degrees(acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
     # omega saturation
-    if omega > 120:
-        omega = 120
-    elif omega < -120:
-        omega = -120
+    # if omega > 120:
+    #     omega = 120
+    # elif omega < -120:
+    #     omega = -120
 
     guidance.send_command(guidance.v, 0.0, omega, dt=dt)
-
-
 class DroneGuidance:
     def __init__(self, guidance_ff_beta, target_ff_beta, target, drone_manager, guidance_velocity=0.5,
                  dt=0.05, N=3):
         self.interception = None
         self.update_thread = threading.Thread(target=crazy.repeat_fun,
-                                              args=(dt,guidance_png, self, dt, N, 0.05))
+                                              args=(dt,guidance_png, self,N, dt, 0.05))
         self.v = guidance_velocity
         self.drone = drone_manager
         self.target_ff = FadingFilter(dimensions=3, order=3, beta=target_ff_beta)
@@ -159,6 +158,7 @@ class DroneGuidance:
         in_r_dot = compute_r_dot(self.drone.position, self.drone.velocity, in_p, in_v, in_r)
         self.r_ff.init(np.array([[in_sigma], [in_sigma_dot]]), in_time)
         self.sigma_ff.init(np.array([[in_r], [in_r_dot]]), in_time)
+        time.sleep(0.01)
         crazy.run = True
         self.target.start()
         self.update_thread.start()

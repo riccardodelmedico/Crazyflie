@@ -42,6 +42,7 @@ def update_wand_target(target):
                            float(sc_v.wand_pos[1] / 1000),
                            float(sc_v.wand_pos[2] / 1000)])
     target.mutex.release()
+
     if not crazy.run:
         print('Extra Run')
 
@@ -80,7 +81,7 @@ class Target:
         if self.time_line[0] == 0.0:
             ret = (self.pos, self.vel, acc, 0.0)
         else:
-            ret = (self.pos, self.vel, acc, self.time_line[-1])
+            ret = (self.pos, self.vel, acc, time.time())
         self.mutex.release()
         return ret
 
