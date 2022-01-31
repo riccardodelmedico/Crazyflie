@@ -9,7 +9,7 @@ from own_module import crazyfun as crazy, script_setup as sc_s, \
     script_variables as sc_v
 from vicon_dssdk import ViconDataStream
 
-t1=t2=0
+
 def compute_sigma(pursuer_pos, target_pos):
     r_v =   target_pos[0:2] -pursuer_pos[0:2]
     sigma = math.atan2(r_v[1], r_v[0])
@@ -36,8 +36,9 @@ def compute_r_dot(pursuer_pos, pursuer_vel, target_pos, target_vel, r):
            (target_vel[1] - pursuer_vel[1]) * (target_pos[1] - pursuer_pos[1]))
     den = r
     return num / den
-
-
+# r_ini=compute_r(np.array([ 0.14384207, -0.49932903]),np.array([-1.39642909,  1.56242288]))
+# r_post = compute_r(np.array([ 0.1464349 , -0.48400056]),np.array([-1.39642909 , 1.56242288]))
+# print(f'sigma dot_ini :{compute_sigma_dot(np.array([ 0.14384207, -0.49932903]),np.array([0.09231327 ,0.51740547]),np.array([-1.39642909,  1.56242288]),np.zeros(2),r_ini)}, mentre il valore alla prim aiterazione è {compute_sigma_dot(np.array([ 0.1464349 , -0.48400056]),np.array([0.07640127 ,0.50170998]),np.array([-1.39642909,  1.56242288]),np.zeros(2),r_post)}')
 def get_wand_position():
     try:
         sc_s.vicon.GetFrame()
@@ -61,8 +62,8 @@ def rot_z(yaw, radians=False):
         rad_yaw = math.radians(yaw)
     else:
         rad_yaw = yaw
-    cos_yaw = math.cos(math.radians(rad_yaw))
-    sin_yaw = math.sin(math.radians(rad_yaw))
+    cos_yaw = math.cos(rad_yaw)
+    sin_yaw = math.sin(rad_yaw)
     rot_yaw = np.array([[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]])
     return rot_yaw
 
@@ -81,7 +82,8 @@ def guidance_png(guidance, n, dt, r_interception):
     guidance.drone.get_state()
     rot_yaw = rot_z(guidance.drone.yaw)
     guidance.drone.velocity = rot_yaw.dot(guidance.drone.velocity)
-    
+    # print(f'drone velocity in guidance: {guidance.drone.velocity}')
+    # print(f'drone position in guidance:{guidance.drone.position}')
     # closed form guindance quantities evaluate
     r = compute_r(guidance.drone.position, est_t_pos)
     sigma = compute_sigma(guidance.drone.position, est_t_pos)
@@ -102,20 +104,22 @@ def guidance_png(guidance, n, dt, r_interception):
     matlab_time = f'{str(crazy.datetime2matlabdatenum(matlab_time))}'
 
     # write in Log [closed_form quantities, estimated quantities and the time of data acquisition]
-    crazy.guidance_matlab.write(tar_pos[0], tar_pos[1], r, sigma, r_dot, sigma_dot,
+    crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot, sigma_dot,
                                 est_r[0], est_sigma[0], est_dot_r[0], est_dot_sigma[0], matlab_time)
 
     n_tv = n / math.cos(sigma - math.radians(guidance.drone.yaw))
     # calculate PNG acceleration with closed form quantities
-    acc = - n * (r_dot * sigma_dot)  # + AcAPNG/2)
+    acc = - n * (est_dot_r * est_dot_sigma)  # + AcAPNG/2)
     omega = - math.degrees(acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
     # omega saturation
-    # if omega > 120:
-    #     omega = 120
-    # elif omega < -120:
-    #     omega = -120
+    if omega > 120:
+        omega = 120
+    elif omega < -120:
+        omega = -120
 
     guidance.send_command(guidance.v, 0.0, omega, dt=dt)
+
+
 class DroneGuidance:
     def __init__(self, guidance_ff_beta, target_ff_beta, target, drone_manager, guidance_velocity=0.5,
                  dt=0.05, N=3):
@@ -148,17 +152,19 @@ class DroneGuidance:
         # inizialization of Homing Fading Filter:
         self.drone.get_state()
         rot_yaw = rot_z(self.drone.yaw)
-        self.drone.velocity = rot_yaw.dot(self.drone.velocity)
-        print(
-            f'Posizioni e velocita iniziali in terna World {self.drone.position},{self.drone.velocity}')
-
+        drone_position = self.drone.position
+        drone_velocity = rot_yaw.dot(self.drone.velocity)
+        # print(f'drone_velocity in start:{drone_velocity}')
+        # print(f'init_pos target:{in_p}')
+        # print(f'init_pos drone:{drone_position}')
         in_sigma = compute_sigma(self.drone.position, in_p)
         in_r = compute_r(self.drone.position, in_p)
-        in_sigma_dot = compute_sigma_dot(self.drone.position, self.drone.velocity, in_p, in_v, in_r)
-        in_r_dot = compute_r_dot(self.drone.position, self.drone.velocity, in_p, in_v, in_r)
+        in_sigma_dot = compute_sigma_dot(drone_position, drone_velocity, in_p, in_v, in_r)
+        in_r_dot = compute_r_dot(drone_position, drone_velocity, in_p, in_v, in_r)
+        print(f' i valori della sigma dot e della R_dot iniziali sono {in_sigma_dot,in_r_dot}')
         self.r_ff.init(np.array([[in_sigma], [in_sigma_dot]]), in_time)
         self.sigma_ff.init(np.array([[in_r], [in_r_dot]]), in_time)
-        time.sleep(0.01)
+        #time.sleep(0.01)
         crazy.run = True
         self.target.start()
         self.update_thread.start()

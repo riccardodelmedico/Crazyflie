@@ -22,7 +22,7 @@ print("terminata l'inizializzazione reale")
 guidance_beta = 0.1
 target_beta = 0.7
 delta = 2e-2
-vc = 0.6
+vc = 0.9
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print('Main Start')
     comp = Model_Compensation()
@@ -30,12 +30,12 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
                     dt=0.1, use_wand_target=True)
 
     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,
-                         box=np.array([1.5, -1.8, 2.0, -0.5]))
+                         box=np.array([1.5, -1.8, 2.0, -1.0]))
 
     guidance = DroneGuidance(guidance_beta, target_beta, target, drone,
                              guidance_velocity=vc,
                              N=5, dt=delta)
-    guidance.start(0.0, 1.0)
+    guidance.start(0.0, vc)
     guidance.stop()
     print('Main Finished')
 # test venuti egregiamente :

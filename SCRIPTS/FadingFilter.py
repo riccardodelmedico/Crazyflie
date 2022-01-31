@@ -51,19 +51,22 @@ class FadingFilter:
             print('Incorrect Dimension of Measure Tensor')
             return False
         dt = timestamp - self.old_t
-        # print(f'timestamp :{timestamp}, dt : {dt}')
         self.old_t = timestamp
+        print(f'i valori del filtro pre-update {self.x_est,self.x_dot_est}')
         if self.order == 1:
             x_est_next = self.x_est + self.g * (measure - self.x_est)
             self.x_est = x_est_next
             return self.x_est
 
         if self.order == 2:
+            # print(
+            #     f'i valori del filtro pre-update {self.x_est, self.x_dot_est}')
             tmp = self.x_est + dt * self.x_dot_est
             self.x_est = tmp + self.g * (measure - tmp)
             x_dot_est_next = self.x_dot_est + (self.h / dt) * (
                         measure - tmp)
             self.x_dot_est = x_dot_est_next
+            # print(f'i valori del filtro pre-update {self.x_est, self.x_dot_est}')
             return self.x_est, self.x_dot_est
 
         if self.order == 3:
