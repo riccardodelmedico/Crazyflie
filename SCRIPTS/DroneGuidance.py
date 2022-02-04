@@ -186,12 +186,15 @@ class DroneGuidance:
         # take off deve eseguire finche non rispetta le condizioni di lancio
         # della guida, quindi V circa self.v ed il drone si trova dentro la box
         print('Start Guidance')
-
-        in_p = get_wand_position()
+        if self.target.wand is True:
+            in_p = get_wand_position()
+            self.target.init_wand(in_p)
+        else:
+            in_p = self.target.pos
         in_v = np.array([0.0, 0.0, 0.0])
         in_a = np.zeros(3)
         # init wand position
-        self.target.init_wand(in_p)
+
         # init target fading filter with initial state
         in_time = time.time()
         self.target_ff.init(np.array([in_p, in_v, in_a]), in_time)

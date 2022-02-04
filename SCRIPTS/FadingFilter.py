@@ -12,7 +12,7 @@ class FadingFilter:
         self.x_est = np.zeros(dimensions)
         self.x_dot_est = np.zeros(dimensions)
         self.time_line = 0
-
+        self.first_iter = True
         if order == 1:
             self.g = 1 - beta
 
@@ -50,33 +50,43 @@ class FadingFilter:
         if measure.shape[0] != self.x_est.shape[0]:
             print('Incorrect Dimension of Measure Tensor')
             return False
-        dt = timestamp - self.old_t
-        self.old_t = timestamp
-        # print(f'i valori del filtro pre-update {self.x_est,self.x_dot_est}')
-        if self.order == 1:
-            x_est_next = self.x_est + self.g * (measure - self.x_est)
-            self.x_est = x_est_next
-            return self.x_est
+        if self.first_iter is True:
+            self.first_iter = False
+            if self.order ==1:
+                return self.x_est
+            elif self.order == 2:
+                return  self.x_est, self.x_dot_est
+            elif self.order == 3:
+                return self.x_est, self.x_dot_est, self.x_ddot_est
 
-        if self.order == 2:
-            # print(
-            #     f'i valori del filtro pre-update {self.x_est, self.x_dot_est}')
-            tmp = self.x_est + dt * self.x_dot_est
-            self.x_est = tmp + self.g * (measure - tmp)
-            x_dot_est_next = self.x_dot_est + (self.h / dt) * (
-                        measure - tmp)
-            self.x_dot_est = x_dot_est_next
-            # print(f'i valori del filtro pre-update {self.x_est, self.x_dot_est}')
-            return self.x_est, self.x_dot_est
+        else:
+            dt = timestamp - self.old_t
+            self.old_t = timestamp
+            # print(f'i valori del filtro pre-update {self.x_est,self.x_dot_est}')
+            if self.order == 1:
+                x_est_next = self.x_est + self.g * (measure - self.x_est)
+                self.x_est = x_est_next
+                return self.x_est
 
-        if self.order == 3:
-            tmp = self.x_est + dt * self.x_dot_est + 0.5 * self.x_ddot_est * math.pow(
-                dt, 2)
-            self.x_est = tmp + self.g * (measure - tmp)
-            x_dot_est_next = self.x_dot_est + dt * self.x_ddot_est + (
-                        self.h / dt) * (measure - tmp)
-            x_ddot_est_next = self.x_ddot_est + (
-                        (2 * self.k) / math.pow(dt, 2)) * (measure - tmp)
-            self.x_dot_est = x_dot_est_next
-            self.x_ddot_est = x_ddot_est_next
-            return self.x_est, self.x_dot_est, self.x_ddot_est
+            if self.order == 2:
+                # print(
+                #     f'i valori del filtro pre-update {self.x_est, self.x_dot_est}')
+                tmp = self.x_est + dt * self.x_dot_est
+                self.x_est = tmp + self.g * (measure - tmp)
+                x_dot_est_next = self.x_dot_est + (self.h / dt) * (
+                            measure - tmp)
+                self.x_dot_est = x_dot_est_next
+                # print(f'i valori del filtro pre-update {self.x_est, self.x_dot_est}')
+                return self.x_est, self.x_dot_est
+
+            if self.order == 3:
+                tmp = self.x_est + dt * self.x_dot_est + 0.5 * self.x_ddot_est * math.pow(
+                    dt, 2)
+                self.x_est = tmp + self.g * (measure - tmp)
+                x_dot_est_next = self.x_dot_est + dt * self.x_ddot_est + (
+                            self.h / dt) * (measure - tmp)
+                x_ddot_est_next = self.x_ddot_est + (
+                            (2 * self.k) / math.pow(dt, 2)) * (measure - tmp)
+                self.x_dot_est = x_dot_est_next
+                self.x_ddot_est = x_ddot_est_next
+                return self.x_est, self.x_dot_est, self.x_ddot_est
