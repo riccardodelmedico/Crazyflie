@@ -95,4 +95,3 @@ class Target:
         print('Stopping Target Thread')
         crazy.run = False
         self.update_thread.join()
-        

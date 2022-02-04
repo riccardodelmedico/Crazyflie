@@ -52,7 +52,7 @@ class FadingFilter:
             return False
         dt = timestamp - self.old_t
         self.old_t = timestamp
-        print(f'i valori del filtro pre-update {self.x_est,self.x_dot_est}')
+        # print(f'i valori del filtro pre-update {self.x_est,self.x_dot_est}')
         if self.order == 1:
             x_est_next = self.x_est + self.g * (measure - self.x_est)
             self.x_est = x_est_next
