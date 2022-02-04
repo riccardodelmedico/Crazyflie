@@ -155,14 +155,17 @@ class DroneManager:
 
     def landing(self):
         self.flying = False
+        self.get_state()
+        land_pos = self.position
+        land_yaw = self.yaw
+        print(f'Landing position:{land_pos}, landing yaw:{land_yaw}')
         for i in np.arange(0.5, 0, -0.05):
-            self.get_state()
-            self.scf.cf.commander.send_position_setpoint(self.position[0],
-                                                         self.position[1],
-                                                         i, self.yaw)
+            self.scf.cf.commander.send_position_setpoint(land_pos[0],
+                                                         land_pos[1],
+                                                         i, land_yaw)
             time.sleep(0.2)
-        self.scf.cf.commander.send_position_setpoint(self.position[0],
-                                                     self.position[1],
-                                                     -0.1, self.yaw)
-        time.sleep(0.2)
+        self.scf.cf.commander.send_position_setpoint(land_pos[0],
+                                                     land_pos[1],
+                                                     -0.1, land_yaw)
+        time.sleep(0.1)
         crazy.run = False

@@ -11,7 +11,7 @@ clear; close all; clc
 %crazyfun__20220111_124449 [0,10] Hz Ampl [60,600][degree/s] time 10 [s]
 %crazyfun__20220111_144442 Ramp [12] [degree/s^2] time 10[s]
 %crazyfun__20220111_143856 Step [0,60] [degree/s] time 10 [s]
-name = "crazyfun__20220111_143856.txt";
+name = "crazyfun__20220201_163354.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 

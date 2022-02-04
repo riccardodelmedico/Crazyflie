@@ -1,20 +1,35 @@
 %% Test APNG con Wand Colpito 
 %crazyfun__20220202_113447
 %crazyfun__20220202_113721
+%crazyfun__20220204_153006
+%crazyfun__20220204_154443
+%% Test APNG target virtuale 
+%crazyfun__20220204_150714
 
-% Test PNG con Wand Colpito
+%% Test PNG con Wand Colpito
 %crazyfun__20220202_115346
 
-%Test PNG target virtuale colpito
+%% Test PNG target virtuale colpito
 %crazyfun__20220203_153354
 %crazyfun__20220203_154452
+%crazyfun__20220204_141955
+
+%% Test PNG homing con Wand
+%crazyfun__20220204_161237
+
+%% Test APNG homing con Wand
+%crazyfun__20220204_162022
+
+%% Pollini intercettazione
+%crazyfun__20220204_173513
+%%
 clear; close all; clc
 
 %% Homing flag
 homing = 0;
 
 %% File loading
-name = "crazyfun__20220203_155106.txt";
+name = "crazyfun__20220204_173513.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
