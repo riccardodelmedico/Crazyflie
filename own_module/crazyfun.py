@@ -13,7 +13,9 @@ from own_module import script_variables as sc_v, script_setup as sc_s
 from cflib.positioning.position_hl_commander import PositionHlCommander
 import signal
 import threading
-
+import ctypes
+winmm = ctypes.WinDLL('winmm')
+winmm.timeBeginPeriod(1)
 t = TicToc()
 first_iter = True
 
@@ -299,9 +301,8 @@ def repeat_fun(period, func, *args):
 
     # Uses a global flag to stop the execution
     while run:
-        time.sleep(next(tick))
         func(*args)
-
+        time.sleep(next(tick))
 
 # standard argument for signal handler calls
 def handler_stop_signal(signum, frame):

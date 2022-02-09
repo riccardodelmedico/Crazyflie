@@ -56,7 +56,9 @@ def guidance_png_command(guidance, n, dt, r_interception):
     sigma = compute_sigma(guidance.drone.position, est_t_pos)
     r_dot = compute_r_dot(guidance.drone.position, guidance.drone.velocity, est_t_pos, est_t_vel, r)
     sigma_dot = compute_sigma_dot(guidance.drone.position, guidance.drone.velocity, est_t_pos, est_t_vel, r)
-    
+    yr = r * sigma
+    (est_yr, est_dot_yr, est_ddot_yr) = guidance.yr_ff.update(np.array([yr]), tar_time)
+
     if r < r_interception and guidance.interception is None:
         guidance.drone.datalog.stop()
         crazy.run = False
@@ -68,12 +70,6 @@ def guidance_png_command(guidance, n, dt, r_interception):
     (est_r, est_dot_r) = guidance.r_ff.update(np.array([r]), tar_time)
     (est_sigma, est_dot_sigma) = guidance.sigma_ff.update(np.array([sigma]), tar_time)
     # print(f' valore della sigma dot calcolata vs. stimata {sigma_dot,est_dot_sigma}')
-    # conversion from python time to MATLAB time and write to logfile
-    matlab_time = datetime.datetime.fromtimestamp(tar_time)
-    matlab_time = f'{str(crazy.datetime2matlabdatenum(matlab_time))}'
-    crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot, sigma_dot,
-                                est_r[0], est_sigma[0], est_dot_r[0], est_dot_sigma[0], matlab_time,
-                                est_t_acc[0], est_t_acc[1])
 
     n_tv = 1 / math.cos(math.radians(guidance.drone.yaw) - sigma)
 
@@ -82,11 +78,20 @@ def guidance_png_command(guidance, n, dt, r_interception):
     r_v = np.append(r_v, 0)
     r_ort = guidance.target.omega_vers_hat.dot(r_v)
     apng_acc = np.transpose(r_ort).dot(est_t_acc)
-    acc = - n * est_dot_sigma * est_dot_r# + apng_acc/2
+    acc = - n * est_dot_sigma * est_dot_r + apng_acc/2
     # # Sliding mode guidance
     # W = 0.5
     # acc = n_tv * (2 * r_dot * est_dot_sigma + n * est_dot_sigma +
     #               w * crazy.sign(est_dot_sigma))
+
+    # conversion from python time to MATLAB time and write to logfile
+    matlab_time = datetime.datetime.fromtimestamp(tar_time)
+    matlab_time = f'{str(crazy.datetime2matlabdatenum(matlab_time))}'
+    crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot,
+                                sigma_dot,
+                                est_r[0], est_sigma[0], est_dot_r[0],
+                                est_dot_sigma[0], matlab_time,
+                                est_t_acc[0], est_t_acc[1], est_ddot_yr[0], apng_acc)
 
     omega = - math.degrees(acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
     # omega saturation
@@ -171,7 +176,7 @@ def guidance_png_homing(guidance, n, dt, r_interception):
 
 
 class DroneGuidance:
-    def __init__(self, guidance_ff_beta, target_ff_beta, target, drone_manager,
+    def __init__(self, guidance_ff_beta, target_ff_beta, yr_ff_beta, target, drone_manager,
                  guidance_velocity=0.5, dt=0.05, N=3):
         self.interception = None
         self.update_thread = threading.Thread(target=crazy.repeat_fun,
@@ -183,6 +188,7 @@ class DroneGuidance:
         self.target = target
         self.r_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta)
         self.sigma_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta)
+        self.yr_ff = FadingFilter(order=3, dimensions=1, beta=yr_ff_beta)
         # self.yaw_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta)
 
     def start(self, vx, vy):
@@ -216,9 +222,13 @@ class DroneGuidance:
         self.r_ff.init(np.array([[in_sigma], [in_sigma_dot]]), in_time)
         self.sigma_ff.init(np.array([[in_r], [in_r_dot]]), in_time)
 
+        # init fading filter for the estimation of yr_ddot
+        yr_init = in_r * in_sigma
+        self.yr_ff.init(np.array([[yr_init], [0.0], [0.0]]), in_time)
+
         yaw_radians = math.radians(self.drone.yaw)
         # self.yaw_ff.init(np.array([[yaw_radians], [self.drone.yawrate]]), in_time)
-        #time.sleep(0.01)
+        time.sleep(0.015)
         crazy.run = True
         self.target.start()
         self.update_thread.start()

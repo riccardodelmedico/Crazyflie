@@ -19,8 +19,9 @@ print("Wand position initialized with 'real' values")
 in_p = np.array([-1.5, 1.5, 0])
 in_v = np.array([0.0, 0.0, 0])
 in_a = 0.0
-guidance_beta = 0.03
+guidance_beta = 0.1
 target_beta = 0.9
+yr_ff_beta = 0.85
 delta = 0.02
 vc = 0.75
 
@@ -28,14 +29,14 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print('Main Start')
     comp = Model_Compensation()
     target = Target(initial_pos=in_p, initial_vel=in_v,# initial_acc_module=in_a,
-                    dt=0.02, use_wand_target=True)
+                    dt=delta, use_wand_target=True)
 
     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,
-                         box=np.array([2.0, -1.0, 1.3, -1.5]))
+                         box=np.array([1.2, -1.5, 2.0, -1.0]))
 
-    guidance = DroneGuidance(guidance_beta, target_beta, target,
+    guidance = DroneGuidance(guidance_beta, target_beta, yr_ff_beta, target,
                              drone, guidance_velocity=vc, dt=delta, N=5)
-    guidance.start(vc, 0.0)
+    guidance.start(0.0, vc)
     guidance.stop()
     print('Main Finished')
 

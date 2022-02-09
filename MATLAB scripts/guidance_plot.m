@@ -29,7 +29,7 @@ clear; close all; clc
 homing = 0;
 
 %% File loading
-name = "crazyfun__20220204_173513.txt";
+name = "crazyfun__20220207_161722.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -84,6 +84,8 @@ fading_sigma_dot = guidance_data(:, 10);
 guidance_time = datetime(guidance_data(:, 11), 'ConvertFrom', 'datenum');
 target_acc_x = guidance_data(:, 12);
 target_acc_y = guidance_data(:, 13);
+est_yr_ddot = guidance_data(:, 14);
+yr_ddot = guidance_data(:, 15);
 
 if (homing == 1)
     intenal_yaw = guidance_data(:, 12);
@@ -120,7 +122,7 @@ clear vicon_data internal_data
 
 %% Animation of the guidance
 % Interpolating the int data to fit them to guidance_time
-figure(5)
+figure('name', "Guidance animation, red=drone, yellow= target")
 int_px_intepl= interp1(int_time, int_px, guidance_time);
 int_py_intepl= interp1(int_time, int_py, guidance_time);
 hold on
@@ -135,55 +137,53 @@ for i= 1:1:length(command_time)
      'MarkerSize', 8, 'MarkerFaceColor', 'r')
     pause(0.05)
 end
-%% 
-if exist('figure2') == 0  %#ok<*EXIST>
-    figure('name', "Target acc est")
-else
-    figure2('name', "Target acc est")
-end
-
+%% Acceleration subsection 
+figure('name', 'X-Acceleration of the target, comparison')
 hold on
 % axis equal
-plot(guidance_time, target_acc_x)
-plot(guidance_time, target_acc_y)
+plot(guidance_time, target_acc_x, 'r')
+sm_acc_x = smooth(target_acc_x);
+plot(guidance_time,sm_acc_x,'b--')
 
+figure('name', 'Y-Acceleration of the target, comparison')
+hold on 
+sm_acc_y = smooth(target_acc_y);
+plot(guidance_time,sm_acc_y,'b--')
+plot(guidance_time, target_acc_y, 'r')
+
+figure('name', 'Target acceleration norm')
 for i= 1:1: length(guidance_time)
     norm_i(i)= norm([target_acc_x(i);target_acc_y(i)],2);
 end
 plot(guidance_time, norm_i)
 norm=mean(norm_i(100:end));
-%% Range and Closing velocity plot: 
-%  comparison between closed form solution and fading filter
-if exist('figure2') == 0  %#ok<*EXIST>
-    figure('name', "Range(R) and Closing Velocity (Vc)")
-else
-    figure2('name', "Range(R) and Closing Velocity (Vc)")
-end
-
-subplot(2,1,1)
-hold on
-grid on
-plot(guidance_time, guidance_r, 'r')
-plot(guidance_time, fading_r, 'b--')
-ylabel("[m]")
-title("Pursuer-Target Distance")
-
-subplot(2,1,2)
-hold on
-grid on
-plot(guidance_time, -guidance_r_dot, 'r ')
-plot(guidance_time, -fading_r_dot, 'b--')
-ylabel("[m/s]")
-title("Closing Velocity")
+% %% Range and Closing velocity plot: 
+% %  comparison between closed form solution and fading filter
+% if exist('figure2') == 0  %#ok<*EXIST>
+%     figure('name', "Range(R) and Closing Velocity (Vc)")
+% else
+%     figure2('name', "Range(R) and Closing Velocity (Vc)")
+% end
+% 
+% subplot(2,1,1)
+% hold on
+% grid on
+% plot(guidance_time, guidance_r, 'r')
+% plot(guidance_time, fading_r, 'b--')
+% ylabel("[m]")
+% title("Pursuer-Target Distance")
+% 
+% subplot(2,1,2)
+% hold on
+% grid on
+% plot(guidance_time, -guidance_r_dot, 'r ')
+% plot(guidance_time, -fading_r_dot, 'b--')
+% ylabel("[m/s]")
+% title("Closing Velocity")
 
 %% LOS and LOS rate plot: 
 %  comparison between closed form solution and fading filter
-if exist('figure2') == 0  %#ok<*EXIST>
-    figure('name', "LOS (sigma) and LOS rate (sigma_dot)")
-else
-    figure2('name', "LOS (sigma) and LOS rate (sigma_dot)")
-end
-
+figure('name', "LOS (sigma) and LOS rate (sigma_dot)")
 subplot(2,1,1)
 hold on
 grid on
@@ -200,14 +200,14 @@ plot(guidance_time, fading_sigma_dot, 'b--')
 ylabel("[rad/s]")
 title("LOS angle derivative")
 
-%% Yaw and YawRate Plot 
+%% Range and Closing velocity
 
-if exist('figure2') == 0  %#ok<*EXIST>
-    figure('name', "Range(R) and Closing Velocity (Vc)")
-else
-    figure2('name', "Range(R) and Closing Velocity (Vc)")
-end
-
+% if exist('figure2') == 0  %#ok<*EXIST>
+%     figure('name', "Range(R) and Closing Velocity (Vc)")
+% else
+%     figure2('name', "Range(R) and Closing Velocity (Vc)")
+% end
+figure('name', "Range(R) and Closing Velocity (Vc)")
 subplot(2,1,1)
 hold on
 grid on
@@ -249,5 +249,19 @@ if(homing ==1)
     ylabel("[rad/s]")
     title("YawRate")
 end
+
+%% Command time analysis
+temporization = second(command_time);
+period = diff(temporization);
+figure('name', 'Temporization')
+plot(period, 'r ')
+mean_period = mean(period)
+
+%% Acceleration
+figure('name', 'yr_ddot vs est yr_ddot')
+hold on
+plot(guidance_time, est_yr_ddot, 'r')
+plot(guidance_time, yr_ddot, 'b')
+
 
 

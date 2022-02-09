@@ -79,10 +79,10 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
         #         time.sleep(0.5)
 
         # # Test utilized to check how a yaw rate command works
-        # for j in np.arange(0, 361, 90): # In order to achieve a circumference
-        #     for i in range(8):
-        #         scf.cf.commander.send_position_setpoint(InitialPos[0]/1000,InitialPos[1]/1000,0.5,j)
-        #         time.sleep(0.5)
+        for j in np.arange(0, 361, 90): # In order to achieve a circumference
+            for i in range(8):
+                scf.cf.commander.send_position_setpoint(InitialPos[0]/1000,InitialPos[1]/1000,0.5,j)
+                time.sleep(0.5)
 
         # Manual landing above the initial position, from an height of 0.5 m
         for i in np.arange(-0.5, 0.12, 0.1):
