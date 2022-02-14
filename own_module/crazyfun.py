@@ -269,7 +269,7 @@ def sign(x):
 
 # Good reading for generator functions:
 # https://www.programiz.com/python-programming/generator
-def repeat_fun(period, func, *args):
+def repeat_fun(type,period, func, *args):
     """
     Uses an internal generator function to run another function
     at a set interval of time.
@@ -300,9 +300,14 @@ def repeat_fun(period, func, *args):
     tick = time_tick()
 
     # Uses a global flag to stop the execution
-    while run:
-        func(*args)
-        time.sleep(next(tick))
+    if type:
+        while run:
+            func(*args)
+            time.sleep(next(tick))
+    else:
+        while run_data:
+            func(*args)
+            time.sleep(next(tick))
 
 # standard argument for signal handler calls
 def handler_stop_signal(signum, frame):
@@ -609,6 +614,7 @@ th_prec = []
 wand_setpoint = [0, 0, 0]
 
 run = True
+run_data =True
 vbat = 0
 
 # Signal handling

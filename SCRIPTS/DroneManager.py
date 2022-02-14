@@ -32,7 +32,7 @@ class DroneManager:
         self.yaw = 0.0
         self.box = box
         self.vicon_thread = threading.Thread(target=crazy.repeat_fun,
-                                             args=(crazy.vicon2drone_period,
+                                             args=(1,crazy.vicon2drone_period,
                                                    crazy.pose_sending,
                                                    self.scf))
         self.datalog = crazy.datalog(self.scf)
@@ -156,9 +156,14 @@ class DroneManager:
     def landing(self):
         self.flying = False
         self.get_state()
-        land_pos = self.position
+        land_pos = np.array([0.0,self.box[3]-0.5])
         land_yaw = self.yaw
         print(f'Landing position:{land_pos}, landing yaw:{land_yaw}')
+        for i in range(20):
+            self.scf.cf.commander.send_position_setpoint(land_pos[0],
+                                                         land_pos[1],
+                                                         sc_v.DEFAULT_HEIGHT, land_yaw)
+            time.sleep(0.2)
         for i in np.arange(0.5, 0, -0.05):
             self.scf.cf.commander.send_position_setpoint(land_pos[0],
                                                          land_pos[1],
@@ -169,3 +174,4 @@ class DroneManager:
                                                      -0.1, land_yaw)
         time.sleep(0.1)
         crazy.run = False
+        crazy.run_data = False

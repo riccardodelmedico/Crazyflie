@@ -29,7 +29,7 @@ clear; close all; clc
 homing = 0;
 
 %% File loading
-name = "crazyfun__20220207_161722.txt";
+name = "crazyfun__20220210_162832.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -86,6 +86,7 @@ target_acc_x = guidance_data(:, 12);
 target_acc_y = guidance_data(:, 13);
 est_yr_ddot = guidance_data(:, 14);
 yr_ddot = guidance_data(:, 15);
+est_yr_ddot_v2 = guidance_data(:,16);
 
 if (homing == 1)
     intenal_yaw = guidance_data(:, 12);
@@ -135,21 +136,41 @@ for i= 1:1:length(command_time)
      'MarkerSize', 8, 'MarkerFaceColor', 'y')
     plot(int_px_intepl(i), int_py_intepl(i), 'ko',...
      'MarkerSize', 8, 'MarkerFaceColor', 'r')
-    pause(0.05)
+    pause(0.02)
 end
 %% Acceleration subsection 
-figure('name', 'X-Acceleration of the target, comparison')
+figure('name', 'X-Velocity of the target, comparison')
 hold on
 % axis equal
-plot(guidance_time, target_acc_x, 'r')
-sm_acc_x = smooth(target_acc_x);
-plot(guidance_time,sm_acc_x,'b--')
+
+%plot(guidance_time(3:end), target_acc_x(3:end), 'r')
+vel_x = diff(target_px);
+vel_x = vel_x./0.02;
+sm_vel_x = smooth(vel_x,50);
+acc_x = diff(sm_vel_x);
+acc_x = acc_x./0.02;
+sm_acc_x = smooth(acc_x,50);
+plot(guidance_time(2:end),vel_x,'g--')
+plot(guidance_time(2:end),sm_vel_x,'b--')
+
+figure('name', 'X-Acceleration of the target, comparison from diff of smooth and non-smooth')
+hold on
+nsm_acc_x= diff(vel_x);
+nsm_acc_x = nsm_acc_x./0.02;
+plot(guidance_time(3:end),acc_x,'g--')
+plot(guidance_time(3:end),sm_acc_x,'b--')
+plot(guidance_time(3:end),nsm_acc_x,'r--')
 
 figure('name', 'Y-Acceleration of the target, comparison')
 hold on 
-sm_acc_y = smooth(target_acc_y);
-plot(guidance_time,sm_acc_y,'b--')
-plot(guidance_time, target_acc_y, 'r')
+vel_y = diff(target_py);
+vel_y = vel_y./0.02;
+vel_y = smooth(vel_y,50);
+acc_y = diff(vel_y);
+acc_y = acc_y./0.02;
+sm_acc_y = smooth(acc_y,50);
+plot(guidance_time(3:end),sm_acc_y,'b--')
+plot(guidance_time(3:end), target_acc_y(3:end), 'r')
 
 figure('name', 'Target acceleration norm')
 for i= 1:1: length(guidance_time)
@@ -262,6 +283,7 @@ figure('name', 'yr_ddot vs est yr_ddot')
 hold on
 plot(guidance_time, est_yr_ddot, 'r')
 plot(guidance_time, yr_ddot, 'b')
-
+plot(guidance_time, est_yr_ddot_v2, 'g--')
+% 
 
 

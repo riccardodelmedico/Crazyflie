@@ -61,10 +61,10 @@ class Target:
         self.omega_vers_hat = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 0]])
         if not self.wand:
             self.update_thread = threading.Thread(target=crazy.repeat_fun,
-                                                  args=(dt, update_virtual_target, self, dt))
+                                                  args=(0,dt, update_virtual_target, self, dt))
         else:
             self.update_thread = threading.Thread(target=crazy.repeat_fun,
-                                                  args=(dt, update_wand_target, self))
+                                                  args=(0,dt, update_wand_target, self))
         self.mutex = threading.Semaphore(1)
 
     def init_wand(self, init_pos):

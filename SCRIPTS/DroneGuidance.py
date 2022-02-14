@@ -61,7 +61,7 @@ def guidance_png_command(guidance, n, dt, r_interception):
 
     if r < r_interception and guidance.interception is None:
         guidance.drone.datalog.stop()
-        crazy.run = False
+        # crazy.run = False
         guidance.interception = r
         print(f"R value at interception: {r}")
         guidance.drone.landing()
@@ -87,11 +87,20 @@ def guidance_png_command(guidance, n, dt, r_interception):
     # conversion from python time to MATLAB time and write to logfile
     matlab_time = datetime.datetime.fromtimestamp(tar_time)
     matlab_time = f'{str(crazy.datetime2matlabdatenum(matlab_time))}'
-    crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot,
+    crazy.guidance_matlab.write(tar_pos[0], tar_pos[1], r, sigma, r_dot,
                                 sigma_dot,
                                 est_r[0], est_sigma[0], est_dot_r[0],
                                 est_dot_sigma[0], matlab_time,
-                                est_t_acc[0], est_t_acc[1], est_ddot_yr[0], apng_acc)
+                                est_t_acc[0], est_t_acc[1], est_ddot_yr[0],
+                                apng_acc)
+    # crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot,
+    #                             sigma_dot,
+    #                             est_r[0], est_sigma[0], est_dot_r[0],
+    #                             est_dot_sigma[0], matlab_time,
+    #                             est_t_acc[0], est_t_acc[1], est_ddot_yr[0], apng_acc)
+
+    # crazy.guidance_matlab.write(tar_pos[0], tar_pos[1], r, sigma, r_dot, sigma_dot, apng_acc,
+    #                             matlab_time)
 
     omega = - math.degrees(acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
     # omega saturation
@@ -128,7 +137,7 @@ def guidance_png_homing(guidance, n, dt, r_interception):
 
     if r < r_interception and guidance.interception is None:
         guidance.drone.datalog.stop()
-        crazy.run = False
+        crazy.run_data = False
         guidance.interception = r
         print(f"R value at interception: {r}")
         guidance.drone.landing()
@@ -180,14 +189,14 @@ class DroneGuidance:
                  guidance_velocity=0.5, dt=0.05, N=3):
         self.interception = None
         self.update_thread = threading.Thread(target=crazy.repeat_fun,
-                                              args=(dt, guidance_png_command,
+                                              args=(0,dt, guidance_png_command,
                                                     self, N, dt, 0.05))
         self.v = guidance_velocity
         self.drone = drone_manager
         self.target_ff = FadingFilter(dimensions=3, order=3, beta=target_ff_beta)
         self.target = target
-        self.r_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta)
-        self.sigma_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta)
+        self.r_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta[1])
+        self.sigma_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta[0])
         self.yr_ff = FadingFilter(order=3, dimensions=1, beta=yr_ff_beta)
         # self.yaw_ff = FadingFilter(order=2, dimensions=1, beta=guidance_ff_beta)
 

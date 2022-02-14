@@ -1,7 +1,8 @@
-
+%%
+clear; close all; clc
 %% Load Data
 
-name = "crazyfun__20220207_161722.txt";
+name = "crazyfun__20220209_153036.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 [path, ~, ~] = fileparts(path);
@@ -29,17 +30,45 @@ clear current_file delimiterIn headerlinesIn name path
 target_px = guidance_data(:,1);
 target_py = guidance_data(:,2);
 guidance_r = guidance_data(:,3);
-guidance_vc = guidance_data(:,4);
-guidance_sigma_dot = guidance_data(:,5);
-guidance_sigma = guidance_data(:, 6);
-guidance_time = datetime(guidance_data(:,end), 'ConvertFrom', 'datenum');
+guidance_vc = guidance_data(:,5);
+guidance_sigma_dot = guidance_data(:,6);
+guidance_sigma = guidance_data(:,4);
+guidance_time = datetime(guidance_data(:,7), 'ConvertFrom', 'datenum');
 ini =second( guidance_time(1));
 size_vec = size(guidance_time);
+
 
 %% Plot Sigma Dot
 
 
 %% Fading Filter Variable
+
+% beta = 0.7;
+% G = 1 -beta^3;
+% H = 1.5*((1-beta)^2)*(1+beta);
+% K = 0.5 *(1-beta)^3;
+% dt = (second(guidance_time(end)) - second(guidance_time(1)))/size_vec(1);
+% s_est = guidance_sigma(1);
+% s_dot_est =   guidance_sigma_dot(1);
+% s_ddot_est = 0;
+% list_s_dot_est = s_dot_est;
+% list_RI= [s_dot_est];
+% error = 0;
+% for i=2:size_vec(1)
+% %     dt = second( guidance_time(i))-second(guidance_time(i-1));
+%     new_s_est = s_est + s_dot_est * dt + 0.5* s_ddot_est *dt^2;
+%     s_est = new_s_est + G* (guidance_sigma(i)-new_s_est);
+%     list_s_est(i) = s_est;
+%     
+%     s_dot_est = s_dot_est+ dt * s_ddot_est + (H/dt)* (guidance_sigma(i)-new_s_est);
+% %     s_dot_RI = (list_s_dot_est(end)-s_dot_est)/dt;
+% %     list_RI(i) =  (s_dot_RI);
+%     list_s_dot_est(i) = (s_dot_est);
+%     s_ddot_est = s_ddot_est + ((2*K)/dt^2)*(guidance_sigma(i)-new_s_est);
+%     list_s_ddot_est(i) = s_ddot_est;
+%     error(i) = guidance_sigma_dot(i)- s_dot_est; 
+%     
+% end
 
 beta = 0.7;
 G = 1 -beta^3;

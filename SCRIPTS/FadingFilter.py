@@ -22,7 +22,7 @@ class FadingFilter:
 
         if order > 2:
             self.x_ddot_est = np.zeros(dimensions)
-            self.g = 1 - math.pow((1 - beta), 3)
+            self.g = 1 - math.pow((beta), 3)
             self.h = 1.5 * math.pow((1 - beta), 2) * (1 + beta)
             self.k = 0.5 * math.pow((1 - beta), 3)
 
