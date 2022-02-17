@@ -22,7 +22,7 @@ def compute_sigma_homing(pursuer_pos, pursuer_yaw, target_pos):
 
 
 def compute_sigma_dot(pursuer_pos, pursuer_vel, target_pos, target_vel, r):
-    num = (target_vel[1] - pursuer_vel[1]) * (target_pos[0] - pursuer_pos[0]) - \
+    num = (target_vel[1] - pursuer_vel[1]) * (target_pos[0] - pursuer_pos[0]) -\
           (target_vel[0] - pursuer_vel[0]) * (target_pos[1] - pursuer_pos[1])
     den = r * r
     return num / den

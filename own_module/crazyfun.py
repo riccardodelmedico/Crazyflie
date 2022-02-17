@@ -1,19 +1,23 @@
 from __future__ import print_function
+
+import ctypes
 import logging
-import os
-import time
 import math
-from pytictoc import TicToc
-from datetime import datetime, timedelta
-from pathlib import Path
-from cflib.crazyflie.syncLogger import SyncLogger
-from cflib.crazyflie.log import LogConfig
-from vicon_dssdk import ViconDataStream
-from own_module import script_variables as sc_v, script_setup as sc_s
-from cflib.positioning.position_hl_commander import PositionHlCommander
+import os
 import signal
 import threading
-import ctypes
+import time
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from cflib.crazyflie.log import LogConfig
+from cflib.crazyflie.syncLogger import SyncLogger
+from cflib.positioning.position_hl_commander import PositionHlCommander
+from pytictoc import TicToc
+
+from own_module import script_variables as sc_v, script_setup as sc_s
+from vicon_dssdk import ViconDataStream
+
 winmm = ctypes.WinDLL('winmm')
 winmm.timeBeginPeriod(1)
 t = TicToc()

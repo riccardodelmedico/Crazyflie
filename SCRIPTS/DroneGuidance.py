@@ -126,54 +126,55 @@ def guidance_png_homing(guidance, n, dt, r_interception):
 
     # closed form guidance quantities evaluate
     r = compute_r(guidance.drone.position, est_t_pos)
-    sigma = compute_sigma_homing(guidance.drone.position,
-                                 guidance.drone.yaw, est_t_pos)
-
-    r_dot = compute_r_dot(guidance.drone.position, guidance.drone.velocity,
-                          est_t_pos, est_t_vel, r)
-    sigma_dot = compute_sigma_dot(guidance.drone.position,
-                                  guidance.drone.velocity, est_t_pos,
-                                  est_t_vel, r)
+    sigma = compute_sigma_homing(guidance.drone.position, guidance.drone.yaw, est_t_pos)
+    r_dot = compute_r_dot(guidance.drone.position, guidance.drone.velocity, est_t_pos, est_t_vel, r)
+    sigma_dot = compute_sigma_dot(guidance.drone.position, guidance.drone.velocity, est_t_pos, est_t_vel, r)
+    yr = r * sigma
+    (est_yr, est_dot_yr, est_ddot_yr) = guidance.yr_ff.update(np.array([yr]), tar_time)
 
     if r < r_interception and guidance.interception is None:
         guidance.drone.datalog.stop()
-        crazy.run_data = False
+        # crazy.run = False
         guidance.interception = r
         print(f"R value at interception: {r}")
         guidance.drone.landing()
 
     # get guidance quantities estimation
     (est_r, est_dot_r) = guidance.r_ff.update(np.array([r]), tar_time)
-    (est_sigma, est_dot_sigma) = guidance.sigma_ff.update(np.array([sigma]),
-                                                          tar_time)
-    yaw_radians = math.radians(guidance.drone.yaw)
-    # (est_yaw,est_yawrate) = guidance.yaw_ff.update(np.array([yaw_radians]),tar_time)
-
-    # sum of sigma_body and yaw-rate to obtain sigma_dot "world"
+    (est_sigma, est_dot_sigma) = guidance.sigma_ff.update(np.array([sigma]), tar_time)
+    # print(f' valore della sigma dot calcolata vs. stimata {sigma_dot,est_dot_sigma}')
     est_dot_sigma += guidance.drone.yawrate
-    print(f'yawrate internal {guidance.drone.yawrate}')
-
-    # conversion from python time to MATLAB time
-    matlab_time = datetime.datetime.fromtimestamp(tar_time)
-    matlab_time = f'{str(crazy.datetime2matlabdatenum(matlab_time))}'
-
-    # write in Log [closed_form quantities, estimated quantities and the time of data acquisition]
-    crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot,
-                                sigma_dot,
-                                est_r[0], est_sigma[0], est_dot_r[0],
-                                est_dot_sigma[0], matlab_time, yaw_radians
-                                , guidance.drone.yawrate)#, est_yaw[0],est_yawrate[0] )
-
-    n_tv = n / math.cos(sigma - math.radians(guidance.drone.yaw))
+    n_tv = 1 / math.cos(math.radians(guidance.drone.yaw) - sigma)
 
     # prova APNG mr. cioni
     r_v = (est_t_pos[0:2] - guidance.drone.position[0:2])/r
-    r_v = np.append(r_v,0)
+    r_v = np.append(r_v, 0)
     r_ort = guidance.target.omega_vers_hat.dot(r_v)
     apng_acc = np.transpose(r_ort).dot(est_t_acc)
+    acc = - n * est_dot_sigma * est_dot_r# + apng_acc/2
+    # # Sliding mode guidance
+    # W = 0.5
+    # acc = n_tv * (2 * r_dot * est_dot_sigma + n * est_dot_sigma +
+    #               w * crazy.sign(est_dot_sigma))
 
-    # calculate PNG acceleration with closed form quantities
-    acc = - n * (est_dot_r * est_dot_sigma) + n * apng_acc#+ np.linalg.norm(est_t_acc[0:2],2)/2
+    # conversion from python time to MATLAB time and write to logfile
+    matlab_time = datetime.datetime.fromtimestamp(tar_time)
+    matlab_time = f'{str(crazy.datetime2matlabdatenum(matlab_time))}'
+    crazy.guidance_matlab.write(tar_pos[0], tar_pos[1], r, sigma, r_dot,
+                                sigma_dot,
+                                est_r[0], est_sigma[0], est_dot_r[0],
+                                est_dot_sigma[0], matlab_time,
+                                est_t_acc[0], est_t_acc[1], est_ddot_yr[0],
+                                apng_acc)
+    # crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot,
+    #                             sigma_dot,
+    #                             est_r[0], est_sigma[0], est_dot_r[0],
+    #                             est_dot_sigma[0], matlab_time,
+    #                             est_t_acc[0], est_t_acc[1], est_ddot_yr[0], apng_acc)
+
+    # crazy.guidance_matlab.write(tar_pos[0], tar_pos[1], r, sigma, r_dot, sigma_dot, apng_acc,
+    #                             matlab_time)
+
     omega = - math.degrees(acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
     # omega saturation
     if omega > 120:
@@ -182,6 +183,75 @@ def guidance_png_homing(guidance, n, dt, r_interception):
         omega = -120
 
     guidance.send_command(guidance.v, 0.0, omega, dt=dt)
+    # # get the state of target
+    # (tar_pos, _, _, tar_time) = guidance.target.get_state()
+    #
+    # # evaluate the estimation of target quantities
+    # (est_t_pos, est_t_vel, est_t_acc) = guidance.target_ff.update(tar_pos, tar_time)
+    #
+    # # get the state of drone in world frame
+    # guidance.drone.get_state()
+    # rot_yaw = rot_z(guidance.drone.yaw)
+    # guidance.drone.velocity = rot_yaw.dot(guidance.drone.velocity)
+    #
+    # # closed form guidance quantities evaluate
+    # r = compute_r(guidance.drone.position, est_t_pos)
+    # sigma = compute_sigma_homing(guidance.drone.position,
+    #                              guidance.drone.yaw, est_t_pos)
+    #
+    # r_dot = compute_r_dot(guidance.drone.position, guidance.drone.velocity,
+    #                       est_t_pos, est_t_vel, r)
+    # sigma_dot = compute_sigma_dot(guidance.drone.position,
+    #                               guidance.drone.velocity, est_t_pos,
+    #                               est_t_vel, r)
+    #
+    # if r < r_interception and guidance.interception is None:
+    #     guidance.drone.datalog.stop()
+    #     crazy.run_data = False
+    #     guidance.interception = r
+    #     print(f"R value at interception: {r}")
+    #     guidance.drone.landing()
+    #
+    # # get guidance quantities estimation
+    # (est_r, est_dot_r) = guidance.r_ff.update(np.array([r]), tar_time)
+    # (est_sigma, est_dot_sigma) = guidance.sigma_ff.update(np.array([sigma]),
+    #                                                       tar_time)
+    # yaw_radians = math.radians(guidance.drone.yaw)
+    # # (est_yaw,est_yawrate) = guidance.yaw_ff.update(np.array([yaw_radians]),tar_time)
+    #
+    # # sum of sigma_body and yaw-rate to obtain sigma_dot "world"
+    # est_dot_sigma += guidance.drone.yawrate
+    # print(f'yawrate internal {guidance.drone.yawrate}')
+    #
+    # # conversion from python time to MATLAB time
+    # matlab_time = datetime.datetime.fromtimestamp(tar_time)
+    # matlab_time = f'{str(crazy.datetime2matlabdatenum(matlab_time))}'
+    #
+    # # write in Log [closed_form quantities, estimated quantities and the time of data acquisition]
+    # # crazy.guidance_matlab.write(est_t_pos[0], est_t_pos[1], r, sigma, r_dot,
+    # #                             sigma_dot,
+    # #                             est_r[0], est_sigma[0], est_dot_r[0],
+    # #                             est_dot_sigma[0], matlab_time, yaw_radians
+    # #                             , guidance.drone.yawrate)#, est_yaw[0],est_yawrate[0] )
+    #
+    # n_tv = n / math.cos(sigma - math.radians(guidance.drone.yaw))
+    #
+    # # prova APNG mr. cioni
+    # r_v = (est_t_pos[0:2] - guidance.drone.position[0:2])/r
+    # r_v = np.append(r_v,0)
+    # r_ort = guidance.target.omega_vers_hat.dot(r_v)
+    # apng_acc = np.transpose(r_ort).dot(est_t_acc)
+    #
+    # # calculate PNG acceleration with closed form quantities
+    # acc = - n * est_dot_sigma * est_dot_r + apng_acc / 2
+    # omega = - math.degrees(acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
+    # # omega saturation
+    # if omega > 120:
+    #     omega = 120
+    # elif omega < -120:
+    #     omega = -120
+    #
+    # guidance.send_command(guidance.v, 0.0, omega, dt=dt)
 
 
 class DroneGuidance:
@@ -189,7 +259,7 @@ class DroneGuidance:
                  guidance_velocity=0.5, dt=0.05, N=3):
         self.interception = None
         self.update_thread = threading.Thread(target=crazy.repeat_fun,
-                                              args=(0,dt, guidance_png_command,
+                                              args=(0, dt, guidance_png_command,
                                                     self, N, dt, 0.05))
         self.v = guidance_velocity
         self.drone = drone_manager
@@ -239,7 +309,7 @@ class DroneGuidance:
         # self.yaw_ff.init(np.array([[yaw_radians], [self.drone.yawrate]]), in_time)
         time.sleep(0.015)
         crazy.run = True
-        self.target.start()
+        self.target.start(in_time)
         self.update_thread.start()
 
     def stop(self):

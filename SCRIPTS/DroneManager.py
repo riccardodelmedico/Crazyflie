@@ -27,12 +27,13 @@ class DroneManager:
         self.position = np.array([])
         self.velocity = np.array([])
         self.yawrate = np.array([])
+        self.initial_position = np.array([])
         self.initial_orientation = np.array([])
         self.flying = False
         self.yaw = 0.0
         self.box = box
         self.vicon_thread = threading.Thread(target=crazy.repeat_fun,
-                                             args=(1,crazy.vicon2drone_period,
+                                             args=(1, crazy.vicon2drone_period,
                                                    crazy.pose_sending,
                                                    self.scf))
         self.datalog = crazy.datalog(self.scf)
@@ -51,6 +52,7 @@ class DroneManager:
                                  GetSegmentGlobalTranslation(sc_v.drone,
                                                              sc_v.drone)[0])
         self.position /= 1000
+        self.initial_position = self.position
         self.initial_orientation = sc_s.vicon. \
             GetSegmentGlobalRotationEulerXYZ(sc_v.drone, sc_v.drone)[0]
 
@@ -156,7 +158,7 @@ class DroneManager:
     def landing(self):
         self.flying = False
         self.get_state()
-        land_pos = np.array([0.0,self.box[3]-0.5])
+        land_pos = self.initial_position
         land_yaw = self.yaw
         print(f'Landing position:{land_pos}, landing yaw:{land_yaw}')
         for i in range(20):
@@ -172,6 +174,6 @@ class DroneManager:
         self.scf.cf.commander.send_position_setpoint(land_pos[0],
                                                      land_pos[1],
                                                      -0.1, land_yaw)
-        time.sleep(0.1)
+        #time.sleep(0.1)
         crazy.run = False
         crazy.run_data = False
