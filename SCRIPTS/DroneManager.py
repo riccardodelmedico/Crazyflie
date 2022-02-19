@@ -14,7 +14,7 @@ from own_module import crazyfun as crazy, script_setup as sc_s, \
 # box[3]: negative y boundary [m]
 # limits are measured from world reference frame origin
 
-
+# drone manager scrive in una variabile globale sc_v.drone_pusruing_state per identificare il momento in cui entra nella box con un fronte in salita
 class DroneManager:
     def __init__(self, scf, pnAcc_xy=1.0, pnAcc_z=0.5, pnPos=0.0, pnVel=0.0,
                  box=np.array([1.0, -1.0, 1.0, -1.0])):
@@ -29,6 +29,7 @@ class DroneManager:
         self.yawrate = np.array([])
         self.initial_orientation = np.array([])
         self.flying = False
+        self.pursuing = False
         self.yaw = 0.0
         self.box = box
         self.vicon_thread = threading.Thread(target=crazy.repeat_fun,

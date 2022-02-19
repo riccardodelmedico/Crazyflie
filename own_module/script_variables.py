@@ -24,6 +24,10 @@ attempts = 10
 # Used in the generation of the position reference for the drone
 drone_or = np.mat([0.0, 0.0, 0.0, 0.0])
 drone_pos = np.array([0.0, 0.0, 0.0])
+
+drone_pusruing_state = False
+
+
 last_wand_pos = np.array([0.0, 0.0, 0.0])
 wand_pos_m = np.array([0.0, 0.0, 0.0])
 wand_pos = np.array([0.0, 0.0, 0.0])
@@ -31,4 +35,5 @@ wand_trans = np.array([0.0, 0.0, 0.0])
 vicon_vel = np.array([0.0, 0.0, 0.0])
 vel_estimate = np.array([0.0, 0.0, 0.0])
 pos_estimate = np.array([0.0, 0.0, 0.0])
+
 
