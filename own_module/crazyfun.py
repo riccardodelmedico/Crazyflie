@@ -14,6 +14,7 @@ from cflib.positioning.position_hl_commander import PositionHlCommander
 import signal
 import threading
 import ctypes
+import numpy as np
 winmm = ctypes.WinDLL('winmm')
 winmm.timeBeginPeriod(1)
 t = TicToc()
@@ -269,7 +270,7 @@ def sign(x):
 
 # Good reading for generator functions:
 # https://www.programiz.com/python-programming/generator
-def repeat_fun(period, func, *args):
+def repeat_fun(type, period, func, *args):
     """
     Uses an internal generator function to run another function
     at a set interval of time.
@@ -300,9 +301,14 @@ def repeat_fun(period, func, *args):
     tick = time_tick()
 
     # Uses a global flag to stop the execution
-    while run:
-        func(*args)
-        time.sleep(next(tick))
+    if type:
+        while run:
+            func(*args)
+            time.sleep(next(tick))
+    else:
+        while run_data:
+            func(*args)
+            time.sleep(next(tick))
 
 # standard argument for signal handler calls
 def handler_stop_signal(signum, frame):
@@ -473,7 +479,9 @@ class MatlabPrint:
             2: "internal_data",
             3: "wand_data",
             4: "command_data",
-            5: "guidance_data"
+            5: "guidance_data",
+            6: "core_data"
+
         }
 
         folder = print_type.get(flag, "Unmanaged")
@@ -545,10 +553,14 @@ class MatlabPrint:
         # You can use a \n as argument to get a newline.
         s = ""
         for arg in args:
-            s = s + "{} ".format(str(arg))
+            if hasattr(arg, '__iter__'):
+                for elem in arg:
+                    s = s + "{} ".format(str(elem))
+            else:
+                s = s + "{} ".format(str(arg))
 
         # timestamp to use in MATLAB
-        s = s + " {}".format(str(datetime2matlabdatenum(datetime.now())))
+        # s = s + " {}".format(str(datetime2matlabdatenum(datetime.now())))
         print(s, file=self.write_descriptor, flush=True)
 
     def read_point(self):
@@ -581,6 +593,33 @@ class MatlabPrint:
         return point
 
 
+class AsyncMatlabPrint(MatlabPrint):
+    def __init__(self, num_data, flag=0):
+        super().__init__(flag)
+        self.saved_data = np.zeros((num_data, 1))
+        self.first_acquisition = False
+
+    def append(self, data):
+        dim_data = np.shape(data)
+        dim_store = np.shape(self.saved_data)
+        if dim_data[0] != dim_store[0]:
+            print('[ERROR] passed data has wrong dimension; data will not be saved')
+            return False
+        if not self.first_acquisition:
+            self.saved_data = data
+            self.first_acquisition = True
+        else:
+            #data_reshaped = np.reshape(data,(dim_store,1))
+            self.saved_data = np.concatenate((self.saved_data, data), axis=1)
+        return True
+
+    def save_all(self):
+        num_write = np.shape(self.saved_data)
+        num_write = num_write[1]
+        for i in range(num_write):
+            self.write(self.saved_data[:, i])
+
+
 # Global variables used
 log_pos_x = 0
 log_pos_y = 0
@@ -609,6 +648,7 @@ th_prec = []
 wand_setpoint = [0, 0, 0]
 
 run = True
+run_data = True
 vbat = 0
 
 # Signal handling
@@ -624,7 +664,7 @@ vicon_matlab = MatlabPrint(flag=0)
 int_matlab = MatlabPrint(flag=2)
 wand_matlab = MatlabPrint(flag=3)
 command_matlab = MatlabPrint(flag=4)
-guidance_matlab = MatlabPrint(flag=5)
+# guidance_matlab = MatlabPrint(flag=5)
 command_matlab.write(0, 0, 0)
 safety_offset = 0.3
 time_limit = 60  # [s]
@@ -632,7 +672,6 @@ tracking = True
 pos_limit = 0.001  # [m]
 max_equal_pos = 10
 callback_mutex = threading.Semaphore(value=1)
-
 
 
 

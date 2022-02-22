@@ -29,7 +29,7 @@ clear; close all; clc
 homing = 0;
 
 %% File loading
-name = "crazyfun__20220207_161722.txt";
+name = "crazyfun__20220204_162022.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 

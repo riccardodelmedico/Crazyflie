@@ -5,6 +5,8 @@ from own_module import script_setup as sc_s, \
     script_variables as sc_v
 from DroneManager import DroneManager
 from Target import Target
+from Seeker import Seeker
+from Data_Core import DataCore
 
 
 print('Wand initial position initialized to zero')
@@ -19,25 +21,29 @@ print("Wand position initialized with 'real' values")
 in_p = np.array([-1.5, 1.5, 0])
 in_v = np.array([0.0, 0.0, 0])
 in_a = 0.0
-guidance_beta = 0.1
-target_beta = 0.9
+guidance_beta = np.array([0.35, 0.3])
+
 yr_ff_beta = 0.85
 delta = 0.02
-vc = 0.75
+beta_core = np.array([0.5, 0.5])
+pos = np.array([-1, -1.5])
+vc = np.array([0, 0.7])
+list_data = ["r", "sigma","t_acc_x","t_acc_y"]
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print('Main Start')
-    comp = Model_Compensation()
-    target = Target(initial_pos=in_p, initial_vel=in_v,# initial_acc_module=in_a,
-                    dt=delta, use_wand_target=True)
-
+    target = Target(initial_pos=in_p, initial_vel=in_v, use_wand_target=True)
+    core = DataCore(200, target, beta_core, vc, scf)
+    core.start()
     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,
                          box=np.array([1.2, -1.5, 2.0, -1.0]))
-
-    guidance = DroneGuidance(guidance_beta, target_beta, yr_ff_beta, target,
-                             drone, guidance_velocity=vc, dt=delta, N=5)
-    guidance.start(0.0, vc)
+    seeker = Seeker(list_data)
+    guidance = DroneGuidance(guidance_beta, yr_ff_beta, seeker,
+                             drone, guidance_velocity=np.linalg.norm(vc, 2), dt=delta, N=5)
+    guidance.start(pos, vc)
     guidance.stop()
+    core.logger.save_all()
+    guidance.logger.save_all()
     print('Main Finished')
 
 # test venuti egregiamente :

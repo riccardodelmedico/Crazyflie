@@ -41,7 +41,7 @@ class FadingFilter:
                         self.x_ddot_est = initial_estimation[2, :]
             self.old_t = initial_time
 
-            print(f'x_est_ini: {self.x_est}, dot_x_est_ini {self.x_dot_est}')
+            print(f'x_est_ini: {self.x_est}, dot_x_est_ini {self.x_dot_est} with time {initial_time}')
 
 
     # Update step of the Fading Filter depending on its order
@@ -63,6 +63,7 @@ class FadingFilter:
         # else:
         dt = timestamp - self.old_t
         self.old_t = timestamp
+        # print(f' la variazione di tempo vale {dt}')
         # print(f'i valori del filtro pre-update {self.x_est,self.x_dot_est}')
         if self.order == 1:
             x_est_next = self.x_est + self.g * (measure - self.x_est)

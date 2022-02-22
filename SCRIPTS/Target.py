@@ -22,7 +22,7 @@ class Target:
             self.pos = np.array([float(sc_v.wand_pos[0] / 1000),
                                    float(sc_v.wand_pos[1] / 1000),
                                    float(sc_v.wand_pos[2] / 1000)])
-            return (self.pos, None)
+            return (self.pos, np.zeros(3))
         else:
             self.pos += self.vel * dt + self.omega_vers_hat.dot(
                 self.vel / np.linalg.norm(self.vel, 2)) * self.acc * dt * dt / 2

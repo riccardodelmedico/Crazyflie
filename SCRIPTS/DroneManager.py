@@ -5,7 +5,21 @@ import numpy as np
 from own_module import crazyfun as crazy, script_setup as sc_s, \
     script_variables as sc_v
 
+guidance_phase = 0
+phase_mutex = threading.Semaphore(value=1)
+def get_phase():
+    global guidance_phase, phase_mutex
+    phase_mutex.acquire(blocking=True)
+    ret = guidance_phase
+    phase_mutex.release()
+    return ret
 
+
+def set_phase(i):
+    global guidance_phase,phase_mutex
+    phase_mutex.acquire(blocking=True)
+    guidance_phase = i
+    phase_mutex.release()
 # box parameter defines a virtual box where crazyflie has to stay in order to
 # implement the guidance law for safety reasons.
 # box[0]: positive x boundary [m]
@@ -25,6 +39,7 @@ class DroneManager:
         self.scf.cf.param.set_value('kalman.pNPos', pnPos)
         self.scf.cf.param.set_value('kalman.pNVel', pnVel)
         self.position = np.array([])
+        self.initial_position = np.array([])
         self.velocity = np.array([])
         self.yawrate = np.array([])
         self.initial_orientation = np.array([])
@@ -47,11 +62,12 @@ class DroneManager:
         time.sleep(0.1)
         cf.param.set_value('kalman.resetEstimation', '0')
 
-    def start(self, vx, vy):
+    def start(self, pos, vel):
         self.position = np.array(sc_s.vicon.
                                  GetSegmentGlobalTranslation(sc_v.drone,
                                                              sc_v.drone)[0])
         self.position /= 1000
+        self.initial_position = self.position
         self.initial_orientation = sc_s.vicon. \
             GetSegmentGlobalRotationEulerXYZ(sc_v.drone, sc_v.drone)[0]
 
@@ -68,20 +84,17 @@ class DroneManager:
 
         self.reset_estimator()
         print('End Kalman Filter Reset')
-
-        # vicon_pose_sending
-        self.vicon_thread.daemon = True
-        self.vicon_thread.start()
-
         # datalog
         self.datalog.start()
-
         # Take-off
-        self.take_off(vx, vy)
+        self.take_off(pos, vel)
 
-    def take_off(self, vx, vy):
+    def take_off(self, pos, vel):
+        global guidance_phase,phase_mutex
         # yaw is computed in order to direct the x-body axis in the same
         # direction of atan(vy, vx)
+        vx= vel[0]
+        vy = vel[1]
         yaw = math.atan2(vy, vx)
         yaw = math.degrees(yaw)
         vel_norm = np.linalg.norm(np.array([vx, vy]), 2)
@@ -109,6 +122,7 @@ class DroneManager:
                                                              sc_v.DEFAULT_HEIGHT,
                                                              j)
                 time.sleep(0.1)
+
         for i in range(10):
             self.scf.cf.commander.send_position_setpoint(self.position[0],
                                                          self.position[1],
@@ -116,11 +130,22 @@ class DroneManager:
                                                          yaw)
             time.sleep(0.1)
         self.flying = True
+
+        for i in range(20):
+            self.scf.cf.commander.send_position_setpoint(pos[0],
+                                                         pos[1],
+                                                         sc_v.DEFAULT_HEIGHT,
+                                                         yaw)
+            time.sleep(0.1)
+
         while not self.check_virtual_box():
             self.scf.cf.commander.send_hover_setpoint(vel_norm, 0.0, 0.0,
                                                       sc_v.DEFAULT_HEIGHT)
 
         self.get_state()
+        phase_mutex.acquire(blocking=True)
+        guidance_phase = 1
+        phase_mutex.release()
         print('Inside Virtual Box')
 
     def get_state(self):
@@ -155,11 +180,21 @@ class DroneManager:
                 return False
 
     def landing(self):
+        global guidance_phase,phase_mutex
+        phase_mutex.acquire(blocking=True)
+        guidance_phase = 0
+        phase_mutex.release()
         self.flying = False
         self.get_state()
-        land_pos = self.position
+        land_pos = self.initial_position
         land_yaw = self.yaw
         print(f'Landing position:{land_pos}, landing yaw:{land_yaw}')
+        for i in range(20):
+            self.scf.cf.commander.send_position_setpoint(land_pos[0],
+                                                         land_pos[1],
+                                                         sc_v.DEFAULT_HEIGHT,
+                                                         land_yaw)
+            time.sleep(0.2)
         for i in np.arange(0.5, 0, -0.05):
             self.scf.cf.commander.send_position_setpoint(land_pos[0],
                                                          land_pos[1],
@@ -170,3 +205,4 @@ class DroneManager:
                                                      -0.1, land_yaw)
         time.sleep(0.1)
         crazy.run = False
+        crazy.run_data = False
