@@ -5,9 +5,28 @@ from own_module import script_setup as sc_s, \
 from DroneManager import DroneManager
 from Target import Target
 from Seeker import Seeker
-from Data_Core import DataCore
+from DataCore import DataCore
 
 
+def get_wand_position():
+    try:
+        sc_s.vicon.GetFrame()
+    except ViconDataStream.DataStreamException as exc:
+        logging.error("Error while getting a frame in the core! "
+                      "--> %s", str(exc))
+
+    # Get current drone position and orientation in Vicon
+    wand_pos = sc_s.vicon. \
+        GetSegmentGlobalTranslation(sc_v.Wand, "Root")[0]
+
+    # Converts in meters
+    wand_pos = np.array([float(wand_pos[0] / 1000),
+                         float(wand_pos[1] / 1000),
+                         float(wand_pos[2] / 1000)])
+    return wand_pos
+
+
+# ------------------MAIN-------------------------- #
 print('Wand initial position initialized to zero')
 in_p = np.zeros(3)
 while len(np.argwhere(in_p == 0.0)) == 3:
@@ -27,7 +46,7 @@ delta = 0.02
 beta_core = np.array([0.5, 0.5])
 pos = np.array([-1, -1.5])
 vc = np.array([0, 0.7])
-list_data = ["r", "sigma","t_acc_x","t_acc_y"]
+list_data = ["r", "sigma", "t_acc_x", "t_acc_y"]
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print('Main Start')
@@ -38,7 +57,8 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
                          box=np.array([1.2, -1.5, 2.0, -1.0]))
     seeker = Seeker(list_data)
     guidance = DroneGuidance(guidance_beta, yr_ff_beta, seeker,
-                             drone, guidance_velocity=np.linalg.norm(vc, 2), dt=delta, N=5)
+                             drone, guidance_velocity=np.linalg.norm(vc, 2),
+                             dt=delta, N=5)
     guidance.start(pos, vc)
     guidance.stop()
     core.logger.save_all()

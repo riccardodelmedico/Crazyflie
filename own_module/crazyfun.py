@@ -1,96 +1,19 @@
 from __future__ import print_function
-import logging
 import os
 import time
-import math
-from pytictoc import TicToc
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from cflib.crazyflie.syncLogger import SyncLogger
 from cflib.crazyflie.log import LogConfig
-from vicon_dssdk import ViconDataStream
-from own_module import script_variables as sc_v, script_setup as sc_s
-from cflib.positioning.position_hl_commander import PositionHlCommander
+from own_module import script_variables as sc_v
 import signal
 import threading
 import ctypes
 import numpy as np
+
+# Increase resolution of PC timer:
+# time.sleep() becomes far more precise
 winmm = ctypes.WinDLL('winmm')
 winmm.timeBeginPeriod(1)
-# t = TicToc()
-# first_iter = True
-
-#
-# def datetime2matlabdatenum(dt):
-#     """
-#     Converts Python 'datetime' object into MATLAB 'datenum' format,
-#     including microseconds.
-#     source: https://stackoverflow.com/a/9391765/5627942
-#
-#     :param dt: Python 'datetime' object.
-#     :type dt: datetime object
-#     :return: Time indication in MATLAB 'datenum' format.
-#     :rtype: float
-#     """
-#
-#     # Synchronize reference start time (Python and MATLAB dates starts at
-#     # different point in time)
-#     mdn = dt + timedelta(days=366)
-#     # Computes seconds...
-#     frac_seconds = (dt - datetime(dt.year, dt.month, dt.day, 0, 0,
-#                                   0)).seconds / \
-#                    (24.0 * 60.0 * 60.0)
-#     # ... and microseconds
-#     frac_microseconds = dt.microsecond / (24.0 * 60.0 * 60.0 * 1000000.0)
-#
-#     return mdn.toordinal() + frac_seconds + frac_microseconds
-
-
-# def print_callback(timestamp, data, log_conf):
-#     """
-#     Prints gathered data to a specific file.
-#
-#     :param data: Data to be logged.
-#     :type data:
-#     :return: None.
-#     :rtype: None
-#     """
-#
-#     pos_x = data['kalman.stateX']
-#     pos_y = data['kalman.stateY']
-#     pos_z = data['kalman.stateZ']
-#     roll = data['stabilizer.roll']
-#     pitch = data['stabilizer.pitch']
-#     yaw = data['stabilizer.yaw']
-#     global battery
-#     battery = data['pm.state']
-#     # Print state estimate to file
-#
-#     int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
-
-#
-# def print_callback_vel_est(timestamp, data, log_conf):
-#     """
-#     Prints gathered data to a specific file.
-#
-#     :param data: Data to be logged.
-#     :type data:
-#     :return: None.
-#     :rtype: None
-#     """
-#     callback_mutex.acquire(blocking=True)
-#     pos_x = sc_v.pos_estimate[0] = data['kalman.stateX']
-#     pos_y = sc_v.pos_estimate[1] = data['kalman.stateY']
-#     pos_z = sc_v.pos_estimate[2] = data['kalman.stateZ']
-#     v_x = sc_v.vel_estimate[0] = data['kalman.statePX']
-#     v_y = sc_v.vel_estimate[1] = data['kalman.statePY']
-#     v_z = sc_v.vel_estimate[2] = data['stabilizer.yaw']
-#     callback_mutex.release()
-#     global battery
-#     battery = data['pm.state']
-#     # Print state estimate to file
-#     int_matlab.write(pos_x, pos_y, pos_z, v_x, v_y, v_z)
-#     # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
 
 
 def print_callback_guidance(timestamp, data, log_conf):
@@ -111,11 +34,9 @@ def print_callback_guidance(timestamp, data, log_conf):
     yaw_rate = sc_v.vel_estimate[2] = data['stateEstimateZ.rateYaw']
 
     callback_mutex.release()
-    global battery
-    battery = data['pm.state']
+
     # Print state estimate to file
-    int_matlab.write(pos_x, pos_y, yaw, v_x, v_y, yaw_rate)
-    # int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw)
+    int_matlab.write(pos_x, pos_y, yaw, v_x, v_y, yaw_rate, time.time())
 
 
 def datalog_async(sync_crazyflie, log_conf):
@@ -162,90 +83,9 @@ def datalog(sync_crazyflie):
     # measure_log.add_variable('stabilizer.pitch', 'float')
     # measure_log.add_variable('stabilizer.yaw', 'float')
 
-    measure_log.add_variable('pm.state', 'int8_t')
-
     datalog_async(sync_crazyflie, measure_log)
 
     return measure_log
-
-
-# def reset_estimator(scf):
-#     """
-#     Resets drone internal estimator.
-#
-#     :param scf: Synchronization wrapper of the Crazyflie object.
-#     :type scf: SyncCrazyflie object
-#     :return: None.
-#     :rtype: None
-#     """
-#
-#     cf = scf.cf
-#     # Actual reset
-#     cf.param.set_value('kalman.resetEstimation', '1')
-#     time.sleep(0.1)
-#
-#     # Wait for the position estimator to converge before doing anything
-#     wait_for_position_estimator(cf)
-
-
-# def wait_for_position_estimator(scf):
-#     """
-#     Waits for the state estimation variance to have a small variation, under a
-#     given threshold.
-#
-#     :param scf: Synchronization wrapper of the Crazyflie object.
-#     :type scf: SyncCrazyflie object
-#     :return: None.
-#     :rtype: None
-#     """
-#
-#     global posvar_period
-#     logging.info('Waiting for the estimator to converge...')
-#
-#     # Setting some logging configurations
-#     log_config = LogConfig(name='Kalman Pos Variance',
-#                            period_in_ms=posvar_period)
-#     log_config.add_variable('kalman.varPX', 'float')
-#     log_config.add_variable('kalman.varPY', 'float')
-#     log_config.add_variable('kalman.varPZ', 'float')
-#
-#     # Initial variance values
-#     var_x_history = [1000] * 10
-#     var_y_history = [1000] * 10
-#     var_z_history = [1000] * 10
-#
-#     # Given threshold
-#     threshold = 0.3  # 001
-#
-#     with SyncLogger(scf, log_config) as logger:
-#         for log_entry in logger:
-#             data = log_entry[1]
-#
-#             # adds current variance values, keeping the vector of the
-#             # same length
-#             var_x_history.append(data['kalman.varPX'])
-#             var_x_history.pop(0)
-#             var_y_history.append(data['kalman.varPY'])
-#             var_y_history.pop(0)
-#             var_z_history.append(data['kalman.varPZ'])
-#             var_z_history.pop(0)
-#
-#             # Compute max and min variance values
-#             min_x = min(var_x_history)
-#             max_x = max(var_x_history)
-#             min_y = min(var_y_history)
-#             max_y = max(var_y_history)
-#             min_z = min(var_z_history)
-#             max_z = max(var_z_history)
-#
-#             logging.debug("dx: %s dy: %s dz: %s",
-#                           max_x - min_x, max_y - min_y, max_z - min_z)
-#
-#             # Stop the waiting action if all 3D variances are beyond threshold
-#             if (max_x - min_x) < threshold and \
-#                     (max_y - min_y) < threshold and \
-#                     (max_z - min_z) < threshold:
-#                 break
 
 
 def sign(x):
@@ -270,11 +110,13 @@ def sign(x):
 
 # Good reading for generator functions:
 # https://www.programiz.com/python-programming/generator
-def repeat_fun(type, period, func, *args):
+def repeat_fun(thread_type, period, func, *args):
     """
     Uses an internal generator function to run another function
     at a set interval of time.
 
+    :param thread_type: Type of periodic thread (Guidance or DataCore)
+    :type thread_type: bool
     :param period: Period at which repeat the execution of func.
     :type period: integer
     :param func: Function to execute.
@@ -301,7 +143,7 @@ def repeat_fun(type, period, func, *args):
     tick = time_tick()
 
     # Uses a global flag to stop the execution
-    if type:
+    if thread_type:
         while run:
             func(*args)
             time.sleep(next(tick))
@@ -309,6 +151,7 @@ def repeat_fun(type, period, func, *args):
         while run_data:
             func(*args)
             time.sleep(next(tick))
+
 
 # standard argument for signal handler calls
 def handler_stop_signal(signum, frame):
@@ -321,132 +164,6 @@ def handler_stop_signal(signum, frame):
 
     global run
     run = False
-
-
-# def pose_sending(sync_cf):
-#     """
-#     Sends the Crazyflie pose taken from the Vicon system to the drone
-#     estimator.
-#
-#     :param sync_cf: Synchronization wrapper of the Crazyflie object.
-#     :type sync_cf: SyncCrazyflie object
-#     :return: None.
-#     :rtype: None
-#     """
-#
-#     # Get a new frame from Vicon
-#     try:
-#         sc_s.vicon.GetFrame()
-#     except ViconDataStream.DataStreamException as exc:
-#         logging.error("Error while getting a frame in the core! "
-#                       "--> %s", str(exc))
-#
-#     # Get current drone position and orientation in Vicon
-#     sc_v.drone_pos = sc_s.vicon. \
-#         GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
-#     sc_v.drone_or = sc_s.vicon. \
-#         GetSegmentGlobalRotationQuaternion(sc_v.drone,
-#                                            sc_v.drone)[0]
-#
-#     # Converts in meters
-#     sc_v.drone_pos = (float(sc_v.drone_pos[0] / 1000),
-#                       float(sc_v.drone_pos[1] / 1000),
-#                       float(sc_v.drone_pos[2] / 1000))
-#
-#     # # Send to drone estimator
-#     # sync_cf.cf.extpos.send_extpose(sc_v.drone_pos[0], sc_v.drone_pos[1],
-#     #                                sc_v.drone_pos[2],
-#     #                                sc_v.drone_or[0], sc_v.drone_or[1],
-#     #                                sc_v.drone_or[2], sc_v.drone_or[3])
-#     # #
-#     sync_cf.cf.extpos.send_extpos(sc_v.drone_pos[0], sc_v.drone_pos[1],
-#                                   sc_v.drone_pos[2])
-#     logging.debug("sent pose: %s %s",
-#                   str(sc_v.drone_pos), str(sc_v.drone_or))
-#
-#     # Log to file
-#     vicon_matlab.write(sc_v.drone_pos[0], sc_v.drone_pos[1],
-#                        sc_v.drone_pos[2],
-#                        sc_v.drone_or[0], sc_v.drone_or[1],
-#                        sc_v.drone_or[2], sc_v.drone_or[3])
-
-#
-# def set_wand_track():
-#     """
-#     Function to set the next setpoint, read as a Wand position from a file.
-#
-#     :return: None.
-#     :rtype: None
-#     """
-#
-#     global wand_setpoint
-#     wand_setpoint = wand_matlab.read_point()
-
-#
-# def wand_sending():
-#     """
-#     Logs the Wand position to a file.
-#
-#     :return: None.
-#     :rtype: None
-#     """
-#
-#     # Get a new frame from Vicon
-#     try:
-#         sc_s.vicon.GetFrame()
-#     except ViconDataStream.DataStreamException as exc:
-#         logging.error("Error while getting a frame in the core! "
-#                       "--> %s", str(exc))
-#
-#     # Get current drone position and orientation in Vicon
-#     sc_v.wand_pos = sc_s.vicon. \
-#         GetSegmentGlobalTranslation(sc_v.Wand, "Root")[0]
-#
-#     # Converts in meters
-#     sc_v.wand_pos = (float(sc_v.wand_pos[0] / 1000),
-#                      float(sc_v.wand_pos[1] / 1000),
-#                      float(sc_v.wand_pos[2] / 1000))
-#
-#     logging.debug("Acquired Wand position: %s", str(sc_v.wand_pos))
-#
-#     # Log to file
-#     wand_matlab.write(sc_v.wand_pos[0],
-#                       sc_v.wand_pos[1],
-#                       sc_v.wand_pos[2])
-
-
-# Monkey-patch; useful:
-# https://stackoverflow.com/questions/5626193/what-is-monkey-patching/6647776#6647776
-# def go_to_nosleep(self,
-#                   x, y, z=PositionHlCommander.DEFAULT,
-#                   velocity=PositionHlCommander.DEFAULT):
-#     """
-#     Monkey-patch of the PositionHlCommander standard 'go_to' method.
-#
-#     :param self: PositionHLCommander object
-#     :param x: X coordinate [m]
-#     :param y: Y coordinate [m]
-#     :param z: Z coordinate [m]
-#     :param velocity: the velocity (meters/second)
-#     :return: None.
-#     :rtype: None
-#     """
-#
-#     z = self._height(z)
-#
-#     dx = x - self._x
-#     dy = y - self._y
-#     dz = z - self._z
-#     distance = math.sqrt(dx * dx + dy * dy + dz * dz)
-#
-#     if distance > 0.0:
-#         duration_s = distance / self._velocity(velocity)
-#         self._hl_commander.go_to(x, y, z, 0, duration_s)
-#         # time.sleep(duration_s)
-#
-#         self._x = x
-#         self._y = y
-#         self._z = z
 
 
 class MatlabPrint:
@@ -481,7 +198,6 @@ class MatlabPrint:
             4: "command_data",
             5: "guidance_data",
             6: "core_data"
-
         }
 
         folder = print_type.get(flag, "Unmanaged")
@@ -603,13 +319,13 @@ class AsyncMatlabPrint(MatlabPrint):
         dim_data = np.shape(data)
         dim_store = np.shape(self.saved_data)
         if dim_data[0] != dim_store[0]:
-            print('[ERROR] passed data has wrong dimension; data will not be saved')
+            print('[ERROR] passed data has wrong dimension;'
+                  ' data will not be saved')
             return False
         if not self.first_acquisition:
             self.saved_data = data
             self.first_acquisition = True
         else:
-            #data_reshaped = np.reshape(data,(dim_store,1))
             self.saved_data = np.concatenate((self.saved_data, data), axis=1)
         return True
 
@@ -630,26 +346,16 @@ log_yaw = 0
 battery = 0
 
 # # Period at which Vicon data will be sent to the Crazyflie
-# vicon2drone_period = 0.1  # [s]
-# wand_period = 0.1  # [s]
-# obstacle_period = 0.1  # [s]
-#
-# # Period at which the target update its position
-# target_period = 0.01 # [s]
-#
-# # Period used in Log configurations
-# datalog_period = 10  # ms
-# posvar_period = 500  # ms
-#
-# # Parameters used in the collision avoidance script
-# safety_threshold = 10  # cm
-# tv_prec = []
-# th_prec = []
-# wand_setpoint = [0, 0, 0]
+vicon2drone_period = 0.1  # [s]
 
+# # Period used in Log configurations
+datalog_period = 10  # ms
+posvar_period = 500  # ms
+
+# # Flag used by repeat_fun to
 run = True
 run_data = True
-# vbat = 0
+
 
 # Signal handling
 # A PyCharm registry option has to be changed, according to
@@ -658,20 +364,11 @@ run_data = True
 signal.signal(signal.SIGINT, handler_stop_signal)
 signal.signal(signal.SIGTERM, handler_stop_signal)
 
-# Istances of the MatlabPrint classes with relative logfile creation
-# vicon_matlab = MatlabPrint(flag=0)
-# #set_matlab = MatlabPrint(flag=1)
+# Instances of the MatlabPrint classes with relative logfile creation
 int_matlab = MatlabPrint(flag=2)
-# wand_matlab = MatlabPrint(flag=3)
-# command_matlab = MatlabPrint(flag=4)
-# # guidance_matlab = MatlabPrint(flag=5)
-# command_matlab.write(0, 0, 0)
 safety_offset = 0.3
 time_limit = 60  # [s]
 tracking = True
 pos_limit = 0.001  # [m]
 max_equal_pos = 10
 callback_mutex = threading.Semaphore(value=1)
-
-
-

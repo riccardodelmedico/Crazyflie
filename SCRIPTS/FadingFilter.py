@@ -3,6 +3,18 @@ import math
 
 
 class FadingFilter:
+    """
+    FadingFilter class implements fading filter equations, dt is computed online
+    using measures' time, i.e. the time when the measures are picked
+
+    Constructor:
+    :param dimensions: dimension of measured data
+    :type dimensions: int
+    :param order: order of FF
+    :type order: int in [1,3]
+    :param beta: parameter used by FF to produce estimation
+    :type beta: float
+    """
     def __init__(self, dimensions=1, order=2, beta=0.5):
         self.order = order
         self.dim = dimensions
@@ -26,8 +38,15 @@ class FadingFilter:
             self.h = 1.5 * math.pow((1 - beta), 2) * (1 + beta)
             self.k = 0.5 * math.pow((1 - beta), 3)
 
-    # Filter initialization with the available measure
     def init(self, initial_estimation, initial_time):
+        """
+         Filter initialization with the available measures
+
+        :param initial_estimation: initial value of estimation
+        :type initial_estimation: float np.array[dimensions]
+        :param initial_time: time associated with initial_estimation
+        :type initial_time: float
+        """
         if initial_estimation.shape[0] != self.order or \
                 initial_estimation.shape[1] != self.x_est.shape[0]:
             print('Incorrect Dimension of Initial Estimate Variable Tensor')
@@ -41,51 +60,40 @@ class FadingFilter:
                         self.x_ddot_est = initial_estimation[2, :]
             self.old_t = initial_time
 
-            print(f'x_est_ini: {self.x_est}, dot_x_est_ini {self.x_dot_est} with time {initial_time}')
-
-
-    # Update step of the Fading Filter depending on its order
-    # timestamp: time at which the measure are obtained; it's used for computing deltaT of the filter
     def update(self, measure, timestamp):
+        """
+        Update step of the Fading Filter depending on its order
+        :param measure: measure used for update
+        :type measure: float np.array[dimensions]
+        :param timestamp: time at which the measure are obtained
+        :type timestamp: float
+
+        :return: updated estimation
+        :rtype: float np.array[dimension, order]
+        """
         if measure.shape[0] != self.x_est.shape[0]:
             print('Incorrect Dimension of Measure Tensor')
             return False
-        # if self.first_iter is True:
-        #     print(f'Estimated velocity {self.x_dot_est}, Estimated position {self.x_est}')
-        #     self.first_iter = False
-        #     if self.order ==1:
-        #         return self.x_est
-        #     elif self.order == 2:
-        #         return  self.x_est, self.x_dot_est
-        #     elif self.order == 3:
-        #         return self.x_est, self.x_dot_est, self.x_ddot_est
 
-        # else:
         dt = timestamp - self.old_t
         self.old_t = timestamp
-        # print(f' la variazione di tempo vale {dt}')
-        # print(f'i valori del filtro pre-update {self.x_est,self.x_dot_est}')
+
         if self.order == 1:
             x_est_next = self.x_est + self.g * (measure - self.x_est)
             self.x_est = x_est_next
             return self.x_est
 
         if self.order == 2:
-            # print(
-            #     f'i valori del filtro pre-update {self.x_est, self.x_dot_est}')
             tmp = self.x_est + dt * self.x_dot_est
             self.x_est = tmp + self.g * (measure - tmp)
             x_dot_est_next = self.x_dot_est + (self.h / dt) * (
                         measure - tmp)
-            # print(f'measure :{measure} tmp: {tmp}')
             self.x_dot_est = x_dot_est_next
-            # print(f'i valori del filtro pre-update {self.x_est, self.x_dot_est}, dt: {dt}')
-            # print(f'tmp value:  {self.g * (measure)}, {-self.g * tmp}')
             return self.x_est, self.x_dot_est
 
         if self.order == 3:
-            tmp = self.x_est + dt * self.x_dot_est + 0.5 * self.x_ddot_est * math.pow(
-                dt, 2)
+            tmp = self.x_est + dt * self.x_dot_est + \
+                  0.5 * self.x_ddot_est * math.pow(dt, 2)
             self.x_est = tmp + self.g * (measure - tmp)
             x_dot_est_next = self.x_dot_est + dt * self.x_ddot_est + (
                         self.h / dt) * (measure - tmp)

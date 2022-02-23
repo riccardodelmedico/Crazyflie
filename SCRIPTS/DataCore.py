@@ -1,17 +1,19 @@
 import logging
 import threading
-import time
 import numpy as np
 from own_module import crazyfun as crazy
 from vicon_dssdk import ViconDataStream
 from own_module import script_variables as sc_v, script_setup as sc_s
 from FadingFilter import FadingFilter
-from DroneManager import set_phase,get_phase
+from DroneManager import set_phase, get_phase
 import GuidanceUtility as gu
 
+# mutex to access DataCore guidance_variable since they are shared between
+# DataCore and Seeker
 mutex = threading.Semaphore(value=1)
-guidance_variable = np.zeros((19,1))
+guidance_variable = np.zeros((19, 1))
 
+# dictionary used to access DataCore guidance_variable
 access_data = {
     'r': 8,
     'sigma': 9,
@@ -25,29 +27,35 @@ access_data = {
 }
 
 
-# (est_t_pos[0], est_t_pos[1],est_pur_pos[0], est_pur_pos[1], && stessa cosa con le velocità, (4)
-# r, sigma,
-# r_dot,sigma_dot, (calcollate con V dai FF)
-# r_dot,sigma_dot, (calcollate con V dai FF e Kalman fillter)
-# matlab_time,
-# est_t_acc[0], est_t_acc[1],est_p_acc[0], est_p_acc[1])
+def get_data(data_list):
+    """
+    Read a subsection of DataCore guidance_variable
 
+    :param data_list: subsection of guidance_variable defined by dictionary
+                      access_data
+    :type data_list: string np.array[...]
+    :return: subsection of guidance_variable and time
+    :rtype: float np.array[...]
+    """
 
-
-
-def get_data(list_param):
-    dim = len(list_param) + 1
-    ret = np.zeros((dim))
+    dim = len(data_list) + 1
+    ret = np.zeros(dim)
     mutex.acquire(blocking=True)
     for i in range(dim - 1):
-        # print(f'paramentro {list_param[i]} vale {guidance_variable[access_data[list_param[i]]]}')
-        ret[i] = guidance_variable[access_data[list_param[i]]]
+        ret[i] = guidance_variable[access_data[data_list[i]]]
     ret[-1] = guidance_variable[access_data['time']]
     mutex.release()
     return ret
 
 
 def get_drone_kf_data():
+    """
+    Read the internal state of drone (from KF)
+
+    :return: KF state (pos_x, pos_y, yaw, vel_x, vel_y, yaw_rate)
+             in world reference frame.
+    :rtype: float np.array[6]
+    """
     ret = np.zeros(6)
     crazy.callback_mutex.acquire(blocking=True)
     pos_x = sc_v.pos_estimate[0]
@@ -63,28 +71,35 @@ def get_drone_kf_data():
     ret[5] = yaw_rate
     return ret
 
+
 def update_data_core(data):
+    """
+    DataCore thread body: it manages the interaction with Vicon, sends the
+    position corrections to the drone and computes guidance quantities.
+
+    :param data: instance of DataCore
+    :type data: DataCore
+    :return: None.
+    :rtype: None
+    """
     global guidance_variable, mutex
-    phase = get_phase()
-    # get the actual frame of viocn object
+    guidance_phase = get_phase()
+    # get the actual frame of vicon object
     try:
         sc_s.vicon.GetFrame()
     except ViconDataStream.DataStreamException as exc:
         logging.error("Error while getting a frame in the core! "
                       "--> %s", str(exc))
 
-    # select Drone position from Frame
+    # select drone position from frame
     drone_pos = sc_s.vicon. \
         GetSegmentGlobalTranslation(sc_v.drone, sc_v.drone)[0]
     drone_pos = np.array([float(drone_pos[0] / 1000),
-                 float(drone_pos[1] / 1000),
-                 float(drone_pos[2] / 1000)])
+                          float(drone_pos[1] / 1000),
+                          float(drone_pos[2] / 1000)])
 
-    # Get current drone position and orientation in Vicon
+    # update data time with frame number diff and save the current time
     frame_number = sc_s.vicon.GetFrameNumber()
-
-    # update data time with frame number diff and save the current time only
-    # when the drone is out of the virtual box
     dt = 0
     mutex.acquire(blocking=True)
     if data.old_frame_number == 0:
@@ -94,7 +109,6 @@ def update_data_core(data):
         new_time = guidance_variable[access_data['time']] + dt
     guidance_variable[access_data['time']] = new_time
     mutex.release()
-
     data.old_frame_number = frame_number
 
     # manage the sending of correction
@@ -104,34 +118,42 @@ def update_data_core(data):
         # correction at 10Hz
         data.scf.cf.extpos.send_extpos(drone_pos[0], drone_pos[1],
                                        drone_pos[2])
-    if phase == 1:
+
+    # drone has just entered into virtual box: fading filter of target and drone
+    # must be initialized
+    if guidance_phase == 1:
         # get actual position and velocity of target
         (t_pos, t_vel) = data.target.update(0)
         # init target fading filter
         print('init target filter')
-        data.target_ff.init(np.array([t_pos[0:2], t_vel[0:2], np.zeros(2)]), new_time)
+        data.target_ff.init(np.array([t_pos[0:2], t_vel[0:2], np.zeros(2)]),
+                            new_time)
         # init drone fading filter
         print('init drone filter')
-        data.drone_ff.init(np.array([drone_pos[0:2], data.drone_vel, np.zeros(2)]),
-                           new_time)
+        data.drone_ff.init(
+            np.array([drone_pos[0:2], data.drone_vel, np.zeros(2)]),
+            new_time)
         guidance_variable[access_data['r']] = gu.compute_r(drone_pos, t_pos)
-        guidance_variable[access_data['sigma']] =  gu.compute_sigma(drone_pos, t_pos)
+        guidance_variable[access_data['sigma']] = gu.compute_sigma(drone_pos,
+                                                                   t_pos)
+        # switch to actual guidance
         set_phase(2)
-    elif phase == 2:
+
+    # guidance has actually began: guidance quantities, target and drone data
+    # must be computed and saved
+    elif guidance_phase == 2:
         # get target position
         (t_pos, t_vel) = data.target.update(dt)
         # get drone internal data
         internal = get_drone_kf_data()
 
-        # compute measured R and Sigma
+        # compute measured R and sigma
         r = gu.compute_r(drone_pos, t_pos)
         sigma = gu.compute_sigma(drone_pos, t_pos)
 
         # update filter
-
         (t_est_pos, t_est_vel, t_est_acc) = data.target_ff.update(t_pos[0:2],
                                                                   new_time)
-
         (d_est_pos, d_est_vel, d_est_acc) = data.drone_ff.update(drone_pos[0:2],
                                                                  new_time)
 
@@ -141,12 +163,13 @@ def update_data_core(data):
                                             t_est_vel, r)
 
         # compute derivative of R and sigma with KF data
-        r_dot_kf = gu.compute_r_dot(internal[0:2], internal[3:5], t_pos, t_est_vel, r)
+        r_dot_kf = gu.compute_r_dot(internal[0:2], internal[3:5], t_pos,
+                                    t_est_vel, r)
         sigma_dot_kf = gu.compute_sigma_dot(internal[0:2], internal[3:5], t_pos,
                                             t_est_vel, r)
 
+        # update and log guidance_variable
         mutex.acquire(blocking=True)
-        # scrivere le variabili
         guidance_variable[0] = t_pos[0]
         guidance_variable[1] = t_pos[1]
         guidance_variable[2] = drone_pos[0]
@@ -163,48 +186,52 @@ def update_data_core(data):
         guidance_variable[access_data['sigma_dot_kf']] = sigma_dot_kf
         guidance_variable[access_data['t_acc_x']] = t_est_acc[0]
         guidance_variable[access_data['t_acc_y']] = t_est_acc[1]
-        guidance_variable[access_data['time']] = new_time
+        # guidance_variable[access_data['time']] = new_time
         guidance_variable[17] = d_est_acc[0]
         guidance_variable[18] = d_est_acc[1]
 
         data.logger.append(guidance_variable)
         mutex.release()
-    # print(f'siamo nella fase {phase} al tempo {new_time}')
+
 
 class DataCore:
+    """
+    DataCore manages Vicon and Drone data, their processing and computing with
+    the correct timing
+
+    Constructor:
+    :param vicon_freq: frequency of Vicon Tracker
+    :type vicon_freq: float
+    :param target: instance of Target class
+    :type target: Target
+    :param beta: beta of target and drone fading filter;
+                 beta[0] => target, beta[1] => drone
+    :type beta: float np.array[2]
+    :param drone_vel: initial drone velocity (for fading filter init.)
+    :type drone_vel: np.array[2]
+    :param scf: Synchronization wrapper of the Crazyflie object
+    :type scf: SyncCrazyflie
+    """
+
     def __init__(self, vicon_freq, target, beta, drone_vel, scf):
         self.vicon_freq = vicon_freq
-        # mutex per accedere alle variabili globali contententi il filtro del drone ed il flag si sincronizzazione
         self.scf = scf
         self.counter = 0
         self.dt = 0.01
         self.old_frame_number = 0
         self.update_thread = threading.Thread(target=crazy.repeat_fun,
                                               args=(0,
-                                              self.dt, update_data_core, self))
+                                                    self.dt, update_data_core,
+                                                    self))
         self.drone_vel = drone_vel
-        # se lo drone_check è a zero deve girare solo le correzioni e controlla quando avviene il fronte in salita
-        # se lo drone_check è 1 inizializza i filtri e poi passa allo stato due
-        # se lo drone_check è 2 fa l'update delle sue variabili
-        self.drone_check = 0
         self.target = target
         self.target_ff = FadingFilter(dimensions=2, order=3, beta=beta[0])
         self.drone_ff = FadingFilter(dimensions=2, order=3, beta=beta[1])
         self.logger = crazy.AsyncMatlabPrint(flag=6, num_data=19)
 
-    #  self.logger =  definire ill logger per la scrittura asincrona
-
-    # (est_t_pos[0], est_t_pos[1],est_pur_pos[0], est_pur_pos[1], && stessa cosa con le velocità, (4)
-    # r, sigma,
-    # r_dot,sigma_dot, (calcollate con V dai FF)
-    # r_dot,sigma_dot, (calcollate con V dai FF e Kalman fillter)
-    # matlab_time,
-    # est_t_acc[0], est_t_acc[1],est_p_acc[0], est_p_acc[1])
     def start(self):
         self.update_thread.daemon = True
         self.update_thread.start()
 
     def stop(self):
         self.update_thread.join()
-
-
