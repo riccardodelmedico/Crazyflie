@@ -171,7 +171,7 @@ class DroneManager:
                 self.scf.cf.commander.send_hover_setpoint(vx, vy,
                                                           yawrate,
                                                           sc_v.DEFAULT_HEIGHT)
-                crazy.command_matlab.write(vx, vy, yawrate)
+                # crazy.command_matlab.write(vx, vy, yawrate)
                 time.sleep(dt)
                 return True
             else:

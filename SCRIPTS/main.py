@@ -1,5 +1,4 @@
 from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
-from Model_Identify import Model_Compensation
 from DroneGuidance import *
 from own_module import script_setup as sc_s, \
     script_variables as sc_v

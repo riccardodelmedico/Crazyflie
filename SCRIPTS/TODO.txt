@@ -1,14 +1,10 @@
-TODO: 1) conversione delle misure della vleocità da body a world da fare in DroneManager; utilizzare una funzione di
-      libreria che calcoli la matrice di rotazione => rot_z(yaw), da fare anche questa
-      2) scrivere compute_r e compute_sigma ed eventualmente raccoglierle in una libreria
-      3) *class Seeker.py => dati le variabili di stato stima la presenza di un seeker a bordo, calcolando la sigma in
-         body e R*
-      4) main.py
-      5) cambiare il thread della guida in modo che sia più preciso e compatto
-      6) eventualmente aggiungere dei metodi nella classe di guida che permettano l'accesso allo stato di target e
-         pursuer
-
 TODO: regole di programmazione
       -> nomi variabili minuscole, classi con nome che seguano CamelCase, nomi file delle classi corrispondenti al nome
          della classe stessa, commenti a inizio file e idelamente per ogni funzione riguardo a input e output
       -> scrivere i commenti e nomi in inglese
+
+TODO:cose rimaste da fare
+    -> commentare a modo e risistemare il file Estimation_Test.py che contiene gli
+     script per valutare le prestazioni della stima con i vari settaggi del filtro
+     di kalman.
+    ->
