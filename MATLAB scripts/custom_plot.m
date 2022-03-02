@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220207_152625.txt";
+name = "crazyfun__20220224_110554.txt";
 % crazyfun__20220124_121109, crazyfun__20220124_140955 test con correzioni e parametri default senza anelli 
 % crazyfun__20220124_121350 con correzioni di angolo e parametri di kalman
 % nostri
@@ -17,16 +17,12 @@ current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
 internal = fullfile(path, '..\internal_data\', name);
-% setpoints = fullfile(path, '..\setpoint_data\', name);
-vicon = fullfile(path, '..\vicon_data\', name); % TODO: redundant?
-wand = fullfile(path, '..\wand_data\', name);
+vicon = fullfile(path, '..\vicon_data\', name); 
 
 delimiterIn = ' ';
 headerlinesIn = 1;
 raw_internal_data = importdata(internal,delimiterIn,headerlinesIn);
-% raw_set_data = importdata(setpoints,delimiterIn,headerlinesIn);
-raw_vicon_data = importdata(vicon,delimiterIn,headerlinesIn); % TODO: redundant?
-% raw_wand = importdata(wand,delimiterIn,headerlinesIn);
+raw_vicon_data = importdata(vicon,delimiterIn,headerlinesIn);
 
 if isstruct(raw_internal_data)
     internal_data = raw_internal_data.data;
@@ -34,23 +30,12 @@ else
     internal_data = raw_internal_data;
 end
 
-% if isstruct(raw_set_data)
-%     set_data = raw_set_data.data;
-% else
-%     set_data = raw_set_data;
-% end
-
 if isstruct(raw_vicon_data)
     vicon_data = raw_vicon_data.data;
 else
     vicon_data = raw_vicon_data;
 end
-
-% if isstruct(raw_wand)
-%     wand_data = raw_wand.data;
-% else
-%     wand_data = raw_wand;
-% end
+ 
 clear wand vicon setpoints internal
 clear raw_set_data raw_vicon_data raw_wand raw_internal_data
 clear current_file delimiterIn headerlinesIn name path
@@ -64,26 +49,18 @@ drone_quatx = vicon_data(:,4);          %  \
 drone_quaty = vicon_data(:,5);          %   |-> drone orientation through quaternions from Vicon 
 drone_quatz = vicon_data(:,6);          %  /
 drone_quatw = vicon_data(:,7);          % /
-cust_time = datetime(vicon_data(:,end), 'ConvertFrom', 'datenum');
+cust_time = vicon_data(:,end);
+cust_time = cust_time - cust_time(1);
 
-
-% setx_v = set_data(:,2);                 % \
-% sety_v = set_data(:,2);                 %  |-> setpoint coordinates in Vicon reference system
-% setz_v = set_data(:,3);                 % /
-% set_time = datetime(set_data(:,end), 'ConvertFrom', 'datenum');
 
 int_px = internal_data(:,1);            % \
 int_py = internal_data(:,2);            %  |-> internal estimate of drone position
 int_pz = internal_data(:,3);            % /
 int_roll = internal_data(:,4);          % \
-int_pitch = -internal_data(:,5);         % |-> internal estimate of drone attitude
+int_pitch = -internal_data(:,5);        %  |-> internal estimate of drone attitude
 int_yaw = internal_data(:,6);           % /
-int_time = datetime(internal_data(:,end), 'ConvertFrom', 'datenum');
-% 
-% wand_px = wand_data(:,1);               % \
-% wand_py = wand_data(:,2);               %  |-> Wand position in Vicon frame
-% wand_pz = wand_data(:,3);               % /
-% wand_time = datetime(wand_data(:,end), 'ConvertFrom', 'datenum');
+int_time = internal_data(:,end);
+int_time = int_time - int_time(1);
 
 clear wand_data set_data vicon_data internal_data
 %% Analysis
@@ -150,7 +127,6 @@ hold on
 grid on
 plot(cust_time, drone_posx,'r')
 plot(int_time, int_px,'b')
-%plot(cust_time, interp_posx, 'g')
 ylabel("meter [m]")
 legend('Vicon', 'Estimate')
 title("X coordinates")
@@ -206,53 +182,3 @@ title("Z coordinates")
 % %plot(int_time, int_pz,'b')
 % ylabel("meter [m]")
 % title("Error in Z coordinates")
-
-%% Setpoint visualization in Vicon reference system
-
-if exist('figure2') == 0  %#ok<*EXIST>
-    figure('name', "Setpoint visualization in Vicon reference system")
-else
-    figure2('name', "Setpoint visualization in Vicon reference system")
-end
-
-subplot(3,1,1)
-hold on
-grid on
-plot(set_time, setx_v, 'o-')
-title("X coordinates")
-
-subplot(3,1,2)
-hold on
-grid on
-plot(set_time, setx_v, 'o-')
-title("Y coordinates")
-
-subplot(3,1,3)
-hold on
-grid on
-plot(set_time, setz_v, 'o-')
-title("Z coordinates")
-
-%% 3D visualization in Vicon reference system
-
-if exist('figure2') == 0  %#ok<*EXIST>
-    figure('name', "3D visualization in Vicon reference system")
-else
-    figure2('name', "3D visualization in Vicon reference system")
-end
-
-hold on
-grid on
-view(10,45)
-% view(0,0)
-xlabel("Vicon x axis [m]")
-ylabel("Vicon y axis [m]")
-zlabel("Vicon z axis [m]")
-
-plot3(setx_v, sety_v, setz_v, 'ko', ...
-     'MarkerSize', 8, 'MarkerFaceColor', 'y')
-plot3(drone_posx, drone_posy, drone_posz, '-b')
-plot_order(setx_v, sety_v, setz_v)
-
-legend("Setpoint", "Drone position as Vicon Object")
-title("Vicon reference system")

@@ -8,10 +8,13 @@ from FadingFilter import FadingFilter
 from DroneManager import set_phase, get_phase
 import GuidanceUtility as gu
 
+# number of guidance quantities which will be computed
+data_dimension = 21
+
 # mutex to access DataCore guidance_variable since they are shared between
 # DataCore and Seeker
 mutex = threading.Semaphore(value=1)
-guidance_variable = np.zeros((19, 1))
+guidance_variable = np.zeros((data_dimension, 1))
 
 # dictionary used to access DataCore guidance_variable
 access_data = {
@@ -23,7 +26,9 @@ access_data = {
     'sigma_dot_kf': 13,
     'time': 14,
     't_acc_x': 15,
-    't_acc_y': 16
+    't_acc_y': 16,
+    'r_kf': 19,
+    'sigma_kf': 20
 }
 
 
@@ -147,9 +152,13 @@ def update_data_core(data):
         # get drone internal data
         internal = get_drone_kf_data()
 
-        # compute measured R and sigma
+        # compute measured R and sigma using only Vicon Frame
         r = gu.compute_r(drone_pos, t_pos)
         sigma = gu.compute_sigma(drone_pos, t_pos)
+
+        # compute R and sigma using KF
+        r_kf = gu.compute_r(internal[0:2], t_pos)
+        sigma_kf = gu.compute_sigma(internal[0:2], t_pos)
 
         # update filter
         (t_est_pos, t_est_vel, t_est_acc) = data.target_ff.update(t_pos[0:2],
@@ -189,7 +198,8 @@ def update_data_core(data):
         # guidance_variable[access_data['time']] = new_time
         guidance_variable[17] = d_est_acc[0]
         guidance_variable[18] = d_est_acc[1]
-
+        guidance_variable[access_data['r_kf']] = r_kf
+        guidance_variable[access_data['sigma_kf']] = sigma_kf
         data.logger.append(guidance_variable)
         mutex.release()
 
@@ -227,7 +237,7 @@ class DataCore:
         self.target = target
         self.target_ff = FadingFilter(dimensions=2, order=3, beta=beta[0])
         self.drone_ff = FadingFilter(dimensions=2, order=3, beta=beta[1])
-        self.logger = crazy.AsyncMatlabPrint(flag=6, num_data=19)
+        self.logger = crazy.AsyncMatlabPrint(flag=6, num_data=data_dimension)
 
     def start(self):
         self.update_thread.daemon = True

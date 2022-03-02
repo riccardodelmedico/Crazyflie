@@ -51,8 +51,10 @@ class Target:
                                  float(wand_pos[2] / 1000)])
             return self.pos, np.zeros(3)
         else:
-            self.pos += self.vel * dt + self.omega_vers_hat.dot(
-                self.vel / np.linalg.norm(self.vel, 2)) * self.acc * dt * dt / 2
-            self.vel += self.omega_vers_hat.dot(
-                self.vel / np.linalg.norm(self.vel, 2)) * self.acc * dt
+            if np.linalg.norm(self.vel, 2) != 0:
+                self.pos += self.vel * dt + self.omega_vers_hat.dot(
+                    self.vel / np.linalg.norm(self.vel, 2)) * self.acc \
+                            * dt * dt / 2
+                self.vel += self.omega_vers_hat.dot(
+                    self.vel / np.linalg.norm(self.vel, 2)) * self.acc * dt
             return self.pos, self.vel

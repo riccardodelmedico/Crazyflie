@@ -15,6 +15,11 @@ import numpy as np
 winmm = ctypes.WinDLL('winmm')
 winmm.timeBeginPeriod(1)
 
+# The value of estimation_mode changes the callback:
+# estimation_mode = False => callback used for guidance
+# estimation_mode = True => callback used for estimation test
+estimation_mode = True
+
 
 def print_callback_guidance(timestamp, data, log_conf):
     """
@@ -32,11 +37,30 @@ def print_callback_guidance(timestamp, data, log_conf):
     v_x = sc_v.vel_estimate[0] = data['kalman.statePX']
     v_y = sc_v.vel_estimate[1] = data['kalman.statePY']
     yaw_rate = sc_v.vel_estimate[2] = data['stateEstimateZ.rateYaw']
-
     callback_mutex.release()
 
     # Print state estimate to file
     int_matlab.write(pos_x, pos_y, yaw, v_x, v_y, yaw_rate, time.time())
+
+
+def print_callback(timestamp, data, log_conf):
+    """
+    Prints gathered data to a specific file.
+    :param data: Data to be logged.
+    :type data:
+    :return: None.
+    :rtype: None
+    """
+
+    pos_x = data['kalman.stateX']
+    pos_y = data['kalman.stateY']
+    pos_z = data['kalman.stateZ']
+    roll = data['stabilizer.roll']
+    pitch = data['stabilizer.pitch']
+    yaw = data['stabilizer.yaw']
+
+    # Print state estimate to file
+    int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw, time.time())
 
 
 def datalog_async(sync_crazyflie, log_conf):
@@ -54,7 +78,10 @@ def datalog_async(sync_crazyflie, log_conf):
 
     crazyflie = sync_crazyflie.cf
     crazyflie.log.add_config(log_conf)
-    log_conf.data_received_cb.add_callback(print_callback_guidance)
+    if estimation_mode:
+        log_conf.data_received_cb.add_callback(print_callback)
+    else:
+        log_conf.data_received_cb.add_callback(print_callback_guidance)
 
 
 def datalog(sync_crazyflie):
@@ -72,16 +99,20 @@ def datalog(sync_crazyflie):
     global datalog_period
 
     measure_log = LogConfig(name='TotalEstimate', period_in_ms=datalog_period)
-    measure_log.add_variable('kalman.stateX', 'float')
-    measure_log.add_variable('kalman.stateY', 'float')
-    measure_log.add_variable('stateEstimateZ.rateYaw', 'float')
-    measure_log.add_variable('kalman.statePX', 'float')
-    measure_log.add_variable('kalman.statePY', 'float')
-    measure_log.add_variable('stabilizer.yaw', 'float')
-    # measure_log.add_variable('kalman.stateZ', 'float')
-    # measure_log.add_variable('stabilizer.roll', 'float')
-    # measure_log.add_variable('stabilizer.pitch', 'float')
-    # measure_log.add_variable('stabilizer.yaw', 'float')
+    if estimation_mode:
+        measure_log.add_variable('kalman.stateX', 'float')
+        measure_log.add_variable('kalman.stateY', 'float')
+        measure_log.add_variable('kalman.stateZ', 'float')
+        measure_log.add_variable('stabilizer.roll', 'float')
+        measure_log.add_variable('stabilizer.pitch', 'float')
+        measure_log.add_variable('stabilizer.yaw', 'float')
+    else:
+        measure_log.add_variable('kalman.stateX', 'float')
+        measure_log.add_variable('kalman.stateY', 'float')
+        measure_log.add_variable('stateEstimateZ.rateYaw', 'float')
+        measure_log.add_variable('kalman.statePX', 'float')
+        measure_log.add_variable('kalman.statePY', 'float')
+        measure_log.add_variable('stabilizer.yaw', 'float')
 
     datalog_async(sync_crazyflie, measure_log)
 
@@ -365,6 +396,7 @@ signal.signal(signal.SIGINT, handler_stop_signal)
 signal.signal(signal.SIGTERM, handler_stop_signal)
 
 # Instances of the MatlabPrint classes with relative logfile creation
+vicon_matlab = MatlabPrint(flag=0)
 int_matlab = MatlabPrint(flag=2)
 safety_offset = 0.3
 time_limit = 60  # [s]

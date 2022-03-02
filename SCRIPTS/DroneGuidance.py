@@ -50,9 +50,9 @@ def guidance_png_command(guidance, n, r_interception):
                                                          new_time)
 
     acc_apng = t_acc_x * math.cos(sigma + math.pi / 2) + \
-               t_acc_y * math.sin(sigma + math.pi / 2)
+        t_acc_y * math.sin(sigma + math.pi / 2)
     # acc_apng = 0
-    acc = n * -est_dot_sigma * est_dot_r + acc_apng / 2
+    acc = n * est_dot_sigma * -est_dot_r
     guidance.drone.get_state()
     omega = - math.degrees(
         acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
@@ -100,7 +100,7 @@ class DroneGuidance:
         self.interception = None
         self.update_thread = threading.Thread(target=crazy.repeat_fun,
                                               args=(1, dt, guidance_png_command,
-                                                    self, N, dt, 0.05))
+                                                    self, N, 0.05))
         self.v = guidance_velocity
         self.drone = drone_manager
         self.seeker = seeker
