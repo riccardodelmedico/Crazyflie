@@ -152,33 +152,53 @@ title("Z coordinates")
 %% Error between internal and vicon data
 % This section analyzes the estimate difference between internal data (from
 % EKF) and vicon data 
-% 
-% if exist('figure2') == 0  %#ok<*EXIST>
-%     figure('name', "Error between positions")
-% else
-%     figure2('name', "Error between positions")
-% end
-% 
-% subplot(3,1,1)
-% hold on
-% grid on
-% plot(cust_time, error_x,'r')
-% %plot(int_time, int_px,'b')
-% ylabel("meter [m]")
-% title("Error in X coordinates")
-% 
-% subplot(3,1,2)
-% hold on
-% grid on
-% plot(cust_time, error_y,'r')
-% %plot(int_time, int_py,'b')
-% ylabel("meter [m]")
-% title("Error in Y coordinates")
-% 
-% subplot(3,1,3)
-% hold on
-% grid on
-% plot(cust_time, error_z,'r')
-% %plot(int_time, int_pz,'b')
-% ylabel("meter [m]")
-% title("Error in Z coordinates")
+
+%interpolated vicon data with removal of NaN elements
+interpolated_vicon_x = interp1(cust_time, drone_posx, int_time);
+interpolated_vicon_x = rmmissing(interpolated_vicon_x);
+interpolated_vicon_y = interp1(cust_time, drone_posy, int_time);
+interpolated_vicon_y = rmmissing(interpolated_vicon_y);
+interpolated_vicon_z = interp1(cust_time, drone_posz, int_time);
+interpolated_vicon_z = rmmissing(interpolated_vicon_z);
+
+int_px = int_px(1:length(interpolated_vicon_x));
+error_x = abs(interpolated_vicon_x - int_px);
+mean_error_x = mean(error_x);
+
+int_py = int_py(1:length(interpolated_vicon_y));
+error_y = abs(interpolated_vicon_y - int_py);
+mean_error_y = mean(error_y);
+
+int_pz = int_pz(1:length(interpolated_vicon_z));
+error_z = abs(interpolated_vicon_z - int_pz);
+mean_error_z = mean(error_z);
+
+fprintf("Mean Position Error:\n x: %f, y: %f, z: %f\n", ...
+        mean_error_x, mean_error_y, mean_error_z);
+
+if exist('figure2') == 0  %#ok<*EXIST>
+    figure('name', "Error between positions")
+else
+    figure2('name', "Error between positions")
+end
+
+subplot(3,1,1)
+hold on
+grid on
+plot(int_time(1:length(interpolated_vicon_x)), error_x,'r')
+ylabel("meter [m]")
+title("Error in X coordinates")
+
+subplot(3,1,2)
+hold on
+grid on
+plot(int_time(1:length(interpolated_vicon_y)), error_y,'r')
+ylabel("meter [m]")
+title("Error in Y coordinates")
+
+subplot(3,1,3)
+hold on
+grid on
+plot(int_time(1:length(interpolated_vicon_z)), error_z,'r')
+ylabel("meter [m]")
+title("Error in Z coordinates")
