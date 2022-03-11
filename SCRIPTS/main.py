@@ -36,21 +36,21 @@ while len(np.argwhere(in_p == 0.0)) == 3:
 print("Wand position initialized with 'real' values")
 
 in_p = np.array([-1.0, 1.5, 0])
-in_v = np.array([0.3, -0.3, 0])
-in_a = 0.0
+in_v = np.array([0.5, 0, 0])
+in_a = 0
 guidance_beta = np.array([0.35, 0.3])
 
 yr_ff_beta = 0.60
 delta = 0.02
 beta_core = np.array([0.45, 0.45])
 pos = np.array([-1, -1.5])
-vc = np.array([0, 0.7])
+vc = np.array([0, 1.0])
 data_list = ["r", "sigma", "t_acc_x", "t_acc_y"]
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print('Main Start')
     target = Target(initial_pos=in_p, initial_vel=in_v, initial_acc_module=in_a,
-                    use_wand_target=False)
+                    use_wand_target=True)
     core = DataCore(200, target, beta_core, vc, scf)
     core.start()
     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,

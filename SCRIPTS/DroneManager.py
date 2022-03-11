@@ -254,7 +254,7 @@ class DroneManager:
                                                          sc_v.DEFAULT_HEIGHT,
                                                          land_yaw)
             time.sleep(0.2)
-        for i in np.arange(0.5, 0, -0.05):
+        for i in np.arange(sc_v.DEFAULT_HEIGHT, 0, -0.05):
             self.scf.cf.commander.send_position_setpoint(land_pos[0],
                                                          land_pos[1],
                                                          i, land_yaw)

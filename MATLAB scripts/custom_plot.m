@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220224_110554.txt";
+name = "crazyfun__20220311_103259.txt";
 % crazyfun__20220124_121109, crazyfun__20220124_140955 test con correzioni e parametri default senza anelli 
 % crazyfun__20220124_121350 con correzioni di angolo e parametri di kalman
 % nostri

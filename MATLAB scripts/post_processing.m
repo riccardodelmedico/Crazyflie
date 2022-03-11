@@ -1,7 +1,7 @@
 clear; clc; close all;
 
 %% Data extraction
-name = "crazyfun__20220225_101036.txt";
+name = "crazyfun__20220311_111030.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 

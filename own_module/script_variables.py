@@ -3,7 +3,7 @@ import numpy as np
 # Vicon connection settings
 VICON_IP = "192.168.10.2"  # Set the IP of the Vicon server to connect to
 VICON_PORT = "801"  # Set the port of the Vicon server to connect to
-drone = "CF_v2"#"CF_v1"  # Set the "Vicon name" of the object linked to the drone
+drone = "CF_v1"#"CF_v1"  # Set the "Vicon name" of the object linked to the drone
 
 # Set the "Vicon-name" of the Wand
 Wand = "Active Wand v2 (Origin Tracking)"
@@ -12,7 +12,7 @@ Wand = "Active Wand v2 (Origin Tracking)"
 uri = 'radio://0/80/2M'
 
 # The height the drone has to reach at the end of the take-off.
-DEFAULT_HEIGHT = 0.5  # [m]
+DEFAULT_HEIGHT = 0.75  # [m]
 
 # Utility flags
 got_frame = 0

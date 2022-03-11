@@ -52,7 +52,7 @@ def guidance_png_command(guidance, n, r_interception):
     acc_apng = t_acc_x * math.cos(sigma + math.pi / 2) + \
         t_acc_y * math.sin(sigma + math.pi / 2)
     # acc_apng = 0
-    acc = n * est_dot_sigma * -est_dot_r
+    acc = n * est_dot_sigma * -est_dot_r + acc_apng/2
     guidance.drone.get_state()
     omega = - math.degrees(
         acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))

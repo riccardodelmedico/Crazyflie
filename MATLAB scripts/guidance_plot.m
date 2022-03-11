@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220225_101036.txt";
+name = "crazyfun__20220311_161049.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -56,29 +56,32 @@ guidance_sigma_dot = guidance_data(:,2);
 guidance_time = guidance_data(:,3);
 
 clear vicon_data internal_data
+% x0= 0.08;
+% y0= 0.07;
+% width= 0.87;
+% height= 0.9;
 
 %% Animation of the guidance
 figure('name', "2D Guidance Visualization in Vicon Reference Frame")
 hold on
 grid on
-xlabel("Vicon x axis [m]")
-ylabel("Vicon y axis [m]")
+xlabel("Vicon x axis [m]",'Interpreter', 'latex')
+ylabel("Vicon y axis [m]",'Interpreter', 'latex')
 xlim([-1.5, 1.2])
 ylim([-1.0, 2.0])
 axis equal 
-h = animatedline('Color', [1, 0.93333, 0], 'LineWidth', 3);
-f = animatedline('Color', [1, 0, 0], 'LineWidth', 3);
+h = animatedline('Color', [1, 0, 0], 'LineWidth', 3);
+f = animatedline('Color', [0, 0, 1], 'LineWidth', 3);
 
 a = tic;
 for i = 1:length(core_time)
-    if(i == 1)
-        drone = plot(drone_px(i),drone_py(i), ...
-						'o','Color',[0, 0, 0], 'MarkerSize', 8,...
-						'MarkerFaceColor',[0, 0, 0]);
-                    
+    if(i == 1)                    
         target = plot(target_px(i),target_py(i), ...
 						'o','Color',[0, 0, 0], 'MarkerSize', 8,...
-						'MarkerFaceColor',[0, 0, 0]);
+						'MarkerFaceColor',[0, 0, 1.0]);
+        drone = plot(drone_px(i),drone_py(i), ...
+						'o','Color',[1.0, 0, 0], 'MarkerSize', 8,...
+						'MarkerFaceColor',[1.0, 0, 0]);                    
     else
         drone.XData = drone_px(i);
         drone.YData = drone_py(i);
@@ -98,11 +101,12 @@ hold on
 grid on
 plot(core_time, core_sigma, 'b--')
 plot(core_time, core_sigma_kf, 'g')
-xlabel("[s]")
-ylabel("[rad]")
-title("LOS angle")
+xlabel("[s]",'Interpreter', 'latex')
+ylabel("[rad]",'Interpreter', 'latex')
+title("LOS angle",'Interpreter', 'latex')
 legend('$\sigma$ computed with only Vicon measures', '$\sigma$ computed with mixed (KF and Vicon) measures', ...
         'Interpreter', 'latex')
+
         
 subplot(2,1,2)
 hold on
@@ -110,24 +114,27 @@ grid on
 plot(guidance_time, guidance_sigma_dot, 'r ')
 plot(core_time, core_sigma_dot_ff, 'b--')
 plot(core_time, core_sigma_dot_kf, 'g')
-xlabel("[s]")
-ylabel("[rad/s]")
-title("LOS angle derivative")
+xlabel("[s]",'Interpreter', 'latex')
+ylabel("[rad/s]",'Interpreter', 'latex')
+title("LOS angle derivative",'Interpreter', 'latex')
 legend('$\dot{\sigma}$ computed on board with FF',...
        '$\dot{\sigma}$ computed with closed-form equation using only Vicon', ...
        '$\dot{\sigma}$ computed with closed-form equation using Vicon and KF', ...
         'Interpreter', 'latex')
+% set(gca, 'Position', [x0,y0,width, height], 'FontSize', 15);
+set(gcf, 'Color', 'w');
+
     
 %% Range and Closing Velocity plot
-figure('name', "Range(R) and Closing Velcoity(-R_dot)")
+figure('name', "Range(R) and Closing Velocity(-R_dot)")
 subplot(2,1,1)
 hold on
 grid on
 plot(core_time, core_r, 'b--')
 plot(core_time, core_r_kf, 'g')
-xlabel("[s]")
-ylabel("[m]")
-title("Range")
+xlabel("[s]",'Interpreter', 'latex')
+ylabel("[m]",'Interpreter', 'latex')
+title("Range",'Interpreter', 'latex')
 legend('$R$ computed with only Vicon measures', '$R$ computed with mixed (KF and Vicon) measures', ...
         'Interpreter', 'latex')
         
@@ -137,9 +144,9 @@ grid on
 plot(guidance_time, -guidance_r_dot, 'r ')
 plot(core_time, -core_r_dot_ff, 'b--')
 plot(core_time, -core_r_dot_kf, 'g')
-xlabel("[s]")
-ylabel("[m/s]")
-title("Closing Velocity")
+xlabel("[s]",'Interpreter', 'latex')
+ylabel("[m/s]",'Interpreter', 'latex')
+title("Closing Velocity",'Interpreter', 'latex')
 legend('$V_c$ computed on board with FF',...
        '$V_c$ computed with closed-form equation using only Vicon', ...
        '$V_c$ computed with closed-form equation using Vicon and KF', ...
@@ -154,10 +161,10 @@ figure('name', "Threads Timing")
 subplot(2,1,1)
 hold on
 grid on
-xlabel("[s]")
-ylabel("[s]")
+xlabel("[s]",'Interpreter', 'latex')
+ylabel("[s]",'Interpreter', 'latex')
 dt_core = diff(core_time);
-title('Timing of DataCore Thread')
+title('Timing of DataCore Thread','Interpreter', 'latex')
 plot(core_time(2:end), dt_core, 'b.')
 mean_dt_core = mean(dt_core);
 legend_dc = sprintf('Mean dt: %0.5f',mean_dt_core);
@@ -166,10 +173,10 @@ legend(legend_dc)
 subplot(2,1,2)
 hold on
 grid on
-xlabel("[s]")
-ylabel("[s]")
+xlabel("[s]",'Interpreter', 'latex')
+ylabel("[s]",'Interpreter', 'latex')
 dt_guidance = diff(guidance_time);
-title('Timing of DroneGuidance Thread')
+title('Timing of DroneGuidance Thread','Interpreter', 'latex')
 plot(guidance_time(2:end), dt_guidance, 'b.')
 mean_dt_guidance = mean(dt_guidance);
 legend_g = sprintf('Mean dt: %0.5f',mean_dt_guidance);

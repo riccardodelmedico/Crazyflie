@@ -18,7 +18,7 @@ winmm.timeBeginPeriod(1)
 # The value of estimation_mode changes the callback:
 # estimation_mode = False => callback used for guidance
 # estimation_mode = True => callback used for estimation test
-estimation_mode = True
+estimation_mode = False
 
 
 def print_callback_guidance(timestamp, data, log_conf):
