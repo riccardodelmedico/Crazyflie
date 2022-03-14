@@ -5,17 +5,6 @@ from GuidanceUtility import *
 from own_module import crazyfun as crazy
 
 
-def rot_z(yaw, radians=False):
-    if not radians:
-        rad_yaw = math.radians(yaw)
-    else:
-        rad_yaw = yaw
-    cos_yaw = math.cos(rad_yaw)
-    sin_yaw = math.sin(rad_yaw)
-    rot_yaw = np.array([[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]])
-    return rot_yaw
-
-
 def guidance_png_command(guidance, n, r_interception):
     """
     implementation of guidance

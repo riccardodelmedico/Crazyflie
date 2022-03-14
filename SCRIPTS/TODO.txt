@@ -4,7 +4,7 @@ TODO: regole di programmazione
       -> scrivere i commenti e nomi in inglese
 
 TODO:cose rimaste da fare
-    -> commentare a modo e risistemare il file Estimation_Test.py che contiene gli
-     script per valutare le prestazioni della stima con i vari settaggi del filtro
-     di kalman.
-    ->
+    -> commentare il main evidenziando cosa l'utente può modificare a sua scelta
+
+
+

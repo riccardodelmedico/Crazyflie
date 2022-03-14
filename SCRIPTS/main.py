@@ -35,31 +35,36 @@ while len(np.argwhere(in_p == 0.0)) == 3:
     in_p = get_wand_position()
 print("Wand position initialized with 'real' values")
 
+wand = True
 in_p = np.array([-1.0, 1.5, 0])
 in_v = np.array([0.5, 0, 0])
 in_a = 0
-guidance_beta = np.array([0.35, 0.3])
 
+guidance_beta = np.array([0.35, 0.3])
+core_beta = np.array([0.45, 0.45])
 yr_ff_beta = 0.60
+
 delta = 0.02
-beta_core = np.array([0.45, 0.45])
-pos = np.array([-1, -1.5])
-vc = np.array([0, 1.0])
+initial_drone_pos = np.array([-1, -1.5])
+chase_velocity = np.array([0, 1.0])
 data_list = ["r", "sigma", "t_acc_x", "t_acc_y"]
+
+virtual_box = np.array([1.2, -1.5, 2.0, -1.0])
+guidance_gain = 5
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print('Main Start')
     target = Target(initial_pos=in_p, initial_vel=in_v, initial_acc_module=in_a,
-                    use_wand_target=True)
-    core = DataCore(200, target, beta_core, vc, scf)
+                    use_wand_target=wand)
+    core = DataCore(200, target, core_beta, chase_velocity, scf)
     core.start()
     drone = DroneManager(scf, 1.5, 2.0, 0.025, 1.0,
-                         box=np.array([1.2, -1.5, 2.0, -1.0]))
+                         box=virtual_box)
     seeker = Seeker(data_list)
     guidance = DroneGuidance(guidance_beta, yr_ff_beta, seeker,
-                             drone, guidance_velocity=np.linalg.norm(vc, 2),
-                             dt=delta, N=5, guidance_data_length=3)
-    guidance.start(pos, vc)
+                             drone, guidance_velocity=np.linalg.norm(chase_velocity, 2),
+                             dt=delta, N=guidance_gain, guidance_data_length=3)
+    guidance.start(initial_drone_pos, chase_velocity)
     guidance.stop()
     core.logger.save_all()
     guidance.logger.save_all()
