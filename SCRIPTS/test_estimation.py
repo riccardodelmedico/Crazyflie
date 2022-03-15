@@ -43,7 +43,7 @@ def pose_sending(sync_cf):
     #                                sc_v.drone_pos[2],
     #                                sc_v.drone_or[0], sc_v.drone_or[1],
     #                                sc_v.drone_or[2], sc_v.drone_or[3])
-    # #
+    #
     sync_cf.cf.extpos.send_extpos(sc_v.drone_pos[0], sc_v.drone_pos[1],
                                   sc_v.drone_pos[2])
     logging.debug("sent pose: %s %s",
@@ -71,7 +71,7 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
     scf.cf.param.set_value('stabilizer.estimator', 2)  # Set KF as estimator
     scf.cf.param.set_value('commander.enHighLevel', '1')
-    scf.cf.param.set_value('kalman.pNAcc_xy', 1.5) # Set the value for the KF
+    scf.cf.param.set_value('kalman.pNAcc_xy', 1.5)  # Set the value for the KF
     scf.cf.param.set_value('kalman.pNAcc_z', 2.0)
     scf.cf.param.set_value('kalman.pNPos', 0.025)
     scf.cf.param.set_value('kalman.pNVel', 1.0)
