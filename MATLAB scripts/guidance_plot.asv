@@ -13,7 +13,7 @@ clear; close all; clc
 % crazyfun__20220216_165228 (target acc.)
 % crazyfun__20220216_170028 (target vel. costante) 
 %% File loading
-name = "crazyfun__20220216_165228.txt";
+name = "crazyfun__20220216_145025.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 

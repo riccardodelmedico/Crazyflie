@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220207_152625.txt";
+name = "crazyfun__20220124_121702.txt";
 % crazyfun__20220124_121109, crazyfun__20220124_140955 test con correzioni e parametri default senza anelli 
 % crazyfun__20220124_121350 con correzioni di angolo e parametri di kalman
 % nostri
@@ -65,8 +65,9 @@ drone_quaty = vicon_data(:,5);          %   |-> drone orientation through quater
 drone_quatz = vicon_data(:,6);          %  /
 drone_quatw = vicon_data(:,7);          % /
 cust_time = datetime(vicon_data(:,end), 'ConvertFrom', 'datenum');
-
-
+% dn_cust_time = cust_time;
+% cust_time= cust_time - cust_time(1);
+% cust_time = seconds(cust_time);
 % setx_v = set_data(:,2);                 % \
 % sety_v = set_data(:,2);                 %  |-> setpoint coordinates in Vicon reference system
 % setz_v = set_data(:,3);                 % /
@@ -79,6 +80,9 @@ int_roll = internal_data(:,4);          % \
 int_pitch = -internal_data(:,5);         % |-> internal estimate of drone attitude
 int_yaw = internal_data(:,6);           % /
 int_time = datetime(internal_data(:,end), 'ConvertFrom', 'datenum');
+% dn_int_time = int_time;
+% int_time = int_time - int_time(1);
+% int_time = seconds(int_time);
 % 
 % wand_px = wand_data(:,1);               % \
 % wand_py = wand_data(:,2);               %  |-> Wand position in Vicon frame
@@ -134,7 +138,6 @@ plot(int_time, crazy_euler(:,3),'b')
 ylabel("degree [°]")
 legend('Vicon', 'Estimate')
 title("Yaw")
-
 %% Comparison between positions
 % This section analyzes the drone's internal position estimation with the
 % Vicon-captured position
@@ -169,6 +172,9 @@ hold on
 grid on
 plot(cust_time, drone_posz,'r')
 plot(int_time, int_pz,'b')
+% plot(dn_cust_time, drone_posz,'g')
+%plot(dn_int_time, int_pz,'black')
+
 ylabel("meter [m]")
 legend('Vicon', 'Estimate')
 title("Z coordinates")
