@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220311_161049.txt";
+name = "crazyfun__20220311_161018.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -93,6 +93,8 @@ for i = 1:length(core_time)
     drawnow limitrate 
     pause(0.01)
 end
+set(gcf, 'Color', 'w');
+
 
 %% LOS and LOS rate plot
 figure('name', "LOS (sigma) and LOS rate (sigma_dot)")
@@ -101,13 +103,12 @@ hold on
 grid on
 plot(core_time, core_sigma, 'b--')
 plot(core_time, core_sigma_kf, 'g')
-xlabel("[s]",'Interpreter', 'latex')
 ylabel("[rad]",'Interpreter', 'latex')
 title("LOS angle",'Interpreter', 'latex')
 legend('$\sigma$ computed with only Vicon measures', '$\sigma$ computed with mixed (KF and Vicon) measures', ...
         'Interpreter', 'latex')
+set(gca, 'FontSize', 18);
 
-        
 subplot(2,1,2)
 hold on
 grid on
@@ -121,7 +122,10 @@ legend('$\dot{\sigma}$ computed on board with FF',...
        '$\dot{\sigma}$ computed with closed-form equation using only Vicon', ...
        '$\dot{\sigma}$ computed with closed-form equation using Vicon and KF', ...
         'Interpreter', 'latex')
-% set(gca, 'Position', [x0,y0,width, height], 'FontSize', 15);
+
+set(gca, 'FontSize', 18);
+set(subplot(2,1,1), 'Position', [0.06, 0.57, 0.92, 0.38]);
+set(subplot(2,1,2), 'Position', [0.06, 0.09, 0.92, 0.38]);
 set(gcf, 'Color', 'w');
 
     
@@ -132,12 +136,12 @@ hold on
 grid on
 plot(core_time, core_r, 'b--')
 plot(core_time, core_r_kf, 'g')
-xlabel("[s]",'Interpreter', 'latex')
 ylabel("[m]",'Interpreter', 'latex')
 title("Range",'Interpreter', 'latex')
 legend('$R$ computed with only Vicon measures', '$R$ computed with mixed (KF and Vicon) measures', ...
         'Interpreter', 'latex')
-        
+set(gca, 'FontSize', 18);
+
 subplot(2,1,2)
 hold on
 grid on
@@ -152,6 +156,11 @@ legend('$V_c$ computed on board with FF',...
        '$V_c$ computed with closed-form equation using Vicon and KF', ...
         'Interpreter', 'latex')
     
+set(gca, 'FontSize', 18);
+set(subplot(2,1,1), 'Position', [0.06, 0.57, 0.92, 0.38]);
+set(subplot(2,1,2), 'Position', [0.06, 0.09, 0.92, 0.38]);
+set(gcf, 'Color', 'w');
+    
 %% Acceleration subsection 
 
 
@@ -161,14 +170,15 @@ figure('name', "Threads Timing")
 subplot(2,1,1)
 hold on
 grid on
-xlabel("[s]",'Interpreter', 'latex')
 ylabel("[s]",'Interpreter', 'latex')
 dt_core = diff(core_time);
 title('Timing of DataCore Thread','Interpreter', 'latex')
 plot(core_time(2:end), dt_core, 'b.')
 mean_dt_core = mean(dt_core);
 legend_dc = sprintf('Mean dt: %0.5f',mean_dt_core);
-legend(legend_dc)
+legend(legend_dc,'interpreter','latex')
+set(gca, 'FontSize', 18);
+
 
 subplot(2,1,2)
 hold on
@@ -180,4 +190,9 @@ title('Timing of DroneGuidance Thread','Interpreter', 'latex')
 plot(guidance_time(2:end), dt_guidance, 'b.')
 mean_dt_guidance = mean(dt_guidance);
 legend_g = sprintf('Mean dt: %0.5f',mean_dt_guidance);
-legend(legend_g)
+legend(legend_g, 'interpreter','latex')
+
+set(gca, 'FontSize', 18);
+set(subplot(2,1,1), 'Position', [0.06, 0.57, 0.92, 0.38]);
+set(subplot(2,1,2), 'Position', [0.07, 0.09, 0.92, 0.38]);
+set(gcf, 'Color', 'w');
