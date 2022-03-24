@@ -3,7 +3,7 @@ import numpy as np
 
 """
 This file is an utility module that computes all the guidance quantities which
-will be feed to fading filter and logged by DataCore.
+will be fed to fading filter and logged by DataCore.
 
 """
 

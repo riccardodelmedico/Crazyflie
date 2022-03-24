@@ -38,6 +38,7 @@ def pose_sending(sync_cf):
                       float(sc_v.drone_pos[1] / 1000),
                       float(sc_v.drone_pos[2] / 1000))
 
+    # ------- USER CAN DECIDE WHETHER USE POSE OR POS CORRECTION ------- #
     # # Send to drone estimator
     # sync_cf.cf.extpos.send_extpose(sc_v.drone_pos[0], sc_v.drone_pos[1],
     #                                sc_v.drone_pos[2],
@@ -46,16 +47,19 @@ def pose_sending(sync_cf):
     #
     sync_cf.cf.extpos.send_extpos(sc_v.drone_pos[0], sc_v.drone_pos[1],
                                   sc_v.drone_pos[2])
+    # ------------------------------------------------------------------ #
+
     logging.debug("sent pose: %s %s",
                   str(sc_v.drone_pos), str(sc_v.drone_or))
 
     # Log to file
     crazy.vicon_matlab.write(sc_v.drone_pos[0], sc_v.drone_pos[1],
-                       sc_v.drone_pos[2],
-                       sc_v.drone_or[0], sc_v.drone_or[1],
-                       sc_v.drone_or[2], sc_v.drone_or[3], time.time())
+                             sc_v.drone_pos[2],
+                             sc_v.drone_or[0], sc_v.drone_or[1],
+                             sc_v.drone_or[2], sc_v.drone_or[3], time.time())
 
 
+# ------- USER CAN DECIDE THE SEQUENCE OF WAYPOINTS ------- #
 sequence = [
     [-0.5, 0.0, 0.5],
     [-0.5, 1.0, 0.5],
@@ -66,15 +70,19 @@ sequence = [
     [0.0, 0.0, 1.0],
     [0.0, 0.0, 0.75]
     ]   # This sequence is utilized to test the upgrade of the Kalman filter estimation
+# --------------------------------------------------------- #
 
 with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
     scf.cf.param.set_value('stabilizer.estimator', 2)  # Set KF as estimator
     scf.cf.param.set_value('commander.enHighLevel', '1')
+
+    # ------- USER CAN DECIDE KALMAN FILTER PARAMETERS ------- #
     scf.cf.param.set_value('kalman.pNAcc_xy', 1.5)  # Set the value for the KF
     scf.cf.param.set_value('kalman.pNAcc_z', 2.0)
     scf.cf.param.set_value('kalman.pNPos', 0.025)
     scf.cf.param.set_value('kalman.pNVel', 1.0)
+    # -------------------------------------------------------- #
 
     # Kalman filter initialization with the initial position and the initial yaw
     InitialPos = sc_s.vicon. \
@@ -96,7 +104,7 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
     print(f'Initial position and yaw of the drone: [x:{scf.cf.param.get_value("kalman.initialX")},'
           f'y:{scf.cf.param.get_value("kalman.initialY")},'
           f'z:{scf.cf.param.get_value("kalman.initialZ")},'
-          f'yaw:{math.degrees(float(scf.cf.param.get_value("kalman.initialYaw")))}') # Yaw angle in degrees
+          f'yaw:{math.degrees(float(scf.cf.param.get_value("kalman.initialYaw")))}')  # Yaw angle in degrees
 
     crazy.run = True
     est_thread = threading.Thread(target=crazy.repeat_fun,
@@ -119,6 +127,7 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
 
         print('Take Off')
 
+        # ----------------- SEQUENCE OR ROTATION TEST ----------------- #
         # # Test utilized to check how the Kalman filter works
         for j in sequence:
             for i in range(10):
@@ -132,8 +141,9 @@ with SyncCrazyflie(sc_v.uri, sc_s.cf) as scf:
         #     for i in range(8):
         #         scf.cf.commander.send_position_setpoint(InitialPos[0]/1000,InitialPos[1]/1000,0.5,j)
         #         time.sleep(0.5)
+        # -------------------------------------------------------------- #
 
-        # Manual landing above the initial position, from an height of 0.5 m
+        # Manual landing above the initial position, from a height of 0.5 m
         for i in np.arange(-0.5, 0.12, 0.1):
             for j in range(1):
                 scf.cf.commander.send_position_setpoint(InitialPos[0] / 1000,
