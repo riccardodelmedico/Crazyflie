@@ -35,3 +35,22 @@ crazyfun__20220311_161018
 crazyfun__20220311_161049
 crazyfun__20220311_161132
 
+target virtuale accelerante:
+HE 90: crazyfun__20220324_114627 APNG
+       crazyfun__20220324_115108 PNG buona
+       crazyfun__20220324_114931 PNG fallita
+       crazyfun__20220324_115719 PNG fallita
+       crazyfun__20220324_115942 PNG buona
+
+HE 0: crazyfun__20220324_101650 APNG buona
+      crazyfun__20220324_101721 PNG buona
+target virtuale non accelerante:
+HE 90:
+        crazyfun__20220324_120929 APNG buona
+        crazyfun__20220324_121203 PNG buona
+HE 45:
+    crazyfun__20220324_122048 PNG buona Chase_vel=0.6[m/s]
+
+HE -45:
+    crazyfun__20220324_122627 PNG buona Chase_vel=0.6[m/s]
+        

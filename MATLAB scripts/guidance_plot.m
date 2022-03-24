@@ -2,7 +2,7 @@ clear; close all; clc
 
 %% File loading
 % For important guidance experiments please see README of report. 
-name = "crazyfun__20220311_161018.txt";
+name = "crazyfun__20220324_122627.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -166,7 +166,45 @@ set(gca, 'FontSize', 18);
 set(subplot(2,1,1), 'Position', [0.06, 0.57, 0.92, 0.38]);
 set(subplot(2,1,2), 'Position', [0.06, 0.09, 0.92, 0.38]);
 set(gcf, 'Color', 'w');
-    
+
+%% Acceleration subsection
+N = 5;
+
+% commanded acceleration from PNG
+acc_c_png = N*(-guidance_r_dot).*guidance_sigma_dot;
+
+% commanded acceleration from APNG
+guidance_sigma = interp1(core_time, core_sigma, guidance_time);
+target_ax = interp1(core_time, target_est_ax, guidance_time);
+target_ay = interp1(core_time, target_est_ay, guidance_time);
+acc_t_apng = zeros(length(guidance_sigma), 1);
+
+for i = 1:length(guidance_sigma)
+    acc_t_apng(i) = target_ax(i)*cos(guidance_sigma(i) + pi/2) + ...
+                    target_ay(i)*sin(guidance_sigma(i) + pi/2);
+end
+
+acc_c_apng = N*(-guidance_r_dot).*guidance_sigma_dot + acc_t_apng;
+
+guidance_time = guidance_time - guidance_time(1);
+
+figure('name', "Comparison between commanded acceleration")
+hold on
+grid on
+xlabel("$[s]$",'Interpreter', 'latex')
+ylabel("$[m/s^2]$",'Interpreter', 'latex')
+axis equal 
+set(gca, 'FontSize', 18);
+set(gcf, 'Color', 'w');
+
+%--------------- USER HAS TO CHOOSE THE CORRECT ONE ----------------------%
+plot(guidance_time, acc_c_png)
+legend('$A^c_{png}$', 'Interpreter', 'latex')
+%-------------------------------------------------------------------------%
+%plot(guidance_time, acc_c_apng)
+%legend('$A^c_{apng}$', 'Interpreter', 'latex')
+%-------------------------------------------------------------------------%
+
 %% Timing analysis
 % This section analyzes timing of execution of DataCore and DroneGuidance
 % threads. 
