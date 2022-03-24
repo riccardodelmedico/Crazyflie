@@ -1,4 +1,9 @@
 function plot_smooth(object, time, x1, x2)
+%plot_smooth is used to plot x1 and its derivative x2 smoothed and not
+%   object: 0 => Drone velocity and acceleration
+%           1 => Target velocity and acceleration
+%           other => range derivative and LOS rate
+
 if(object == 0 || object == 1)
     if(object == 0)
         var = "Drone";
@@ -80,10 +85,5 @@ else
     legend('Incremental ratio', 'Smoothed','interpreter','latex')
     set(gca, 'FontSize', 17);
 
-
-
 end
 end
-
-
-

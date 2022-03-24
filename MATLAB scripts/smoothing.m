@@ -1,6 +1,12 @@
 function [sm_x_dot, sm_x_ddot, x_dot, x_ddot] = smoothing(x, param, time)
-%param == dimension of moving average
-
+%smoothing function uses MATLAB smooth function to obtain quantities which
+% can be used as references
+%   The function obtains the first and second derivative of x; it returns
+%   smoothed quantities (sm_x_dot, sm_x_ddot) but also the numerical
+%   derivatives (x_dot, x_ddot). Note that x_ddot is computed using 
+%   smoothed first derivative to avoid excessive noise 
+%   param: dimension of moving average
+%   time: time vector used for differentiating
 difference = diff(x);
 delta_t = (diff(time));
 x_dot = difference./delta_t;

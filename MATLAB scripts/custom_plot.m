@@ -1,10 +1,10 @@
-clear; close all;% clc
+clear; close all; clc
 
 %% File loading
 name = "crazyfun__20220315_110817.txt";
-% crazyfun__20220315_110052 : parametri vecchi e correzioni
-% crazyfun__20220315_110420 : parametri nuovi e correzioni
-% crazyfun__20220315_110817 : parametri nuovi e no correzioni
+% crazyfun__20220315_110052 : default parameters with angles correction
+% crazyfun__20220315_110420 : modified parameters with angles correction
+% crazyfun__20220315_110817 : modified parameters without angles correction
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -55,146 +55,6 @@ int_time = internal_data(:,end);
 int_time = int_time - int_time(1);
 
 clear wand_data set_data vicon_data internal_data
-%% Analysis
-% MATLAB uses q = [w x y z]
-% Vicon creates q = [x y z w]
-
-% Conversion to Euler angles from the Vicon-generated quaternions
-vicon_quat = [drone_quatw, drone_quatx, drone_quaty, drone_quatz];
-vicon_euler = rad2deg(quat2eul(vicon_quat,'XYZ'));
-
-% orientation quaternion derived from internal estimate
-crazy_euler = [int_roll, int_pitch, int_yaw];
-
-% clear vicon_quat drone_quatw drone_quatx drone_quaty drone_quatz
-
-% %% Comparison between Euler angles
-% % This section analyzes the drone's internal attitude estimation with the
-% % Vicon-captured angles
-% 
-% if exist('figure2') == 0  %#ok<*EXIST>
-%     figure('name', "Comparison between Euler angles")
-% else
-%     figure2('name', "Comparison between Euler angles")
-% end
-% 
-% subplot(3,1,1)
-% hold on
-% grid on
-% plot(cust_time, vicon_euler(:,1),'r')
-% plot(int_time, crazy_euler(:,1),'b')
-% ylabel("degree [°]")
-% legend('Vicon', 'Estimate')
-% title("Roll")
-% 
-% subplot(3,1,2)
-% hold on
-% grid on
-% plot(cust_time, vicon_euler(:,2),'r')
-% plot(int_time, crazy_euler(:,2),'b')
-% ylabel("degree [°]")
-% legend('Vicon', 'Estimate')
-% title("Pitch")
-% 
-% subplot(3,1,3)
-% hold on
-% grid on
-% plot(cust_time, vicon_euler(:,3),'r')
-% plot(int_time, crazy_euler(:,3),'b')
-% ylabel("degree [°]")
-% legend('Vicon', 'Estimate')
-% title("Yaw")
-% 
-% %% Comparison between positions
-% % This section analyzes the drone's internal position estimation with the
-% % Vicon-captured position
-% 
-% if exist('figure2') == 0  %#ok<*EXIST>
-%     figure('name', "Comparison between positions")
-% else
-%     figure2('name', "Comparison between positions")
-% end
-% 
-% subplot(3,1,1)
-% hold on
-% grid on
-% plot(cust_time, drone_posx,'r')
-% plot(int_time, int_px,'b')
-% ylabel("Meter [m]")
-% legend('Vicon', 'Estimate')
-% title("X coordinates")
-% 
-% subplot(3,1,2)
-% hold on
-% grid on
-% plot(cust_time, drone_posy,'r')
-% plot(int_time, int_py,'b')
-% ylabel("Meter [m]")
-% legend('Vicon', 'Estimate')
-% title("Y coordinates")
-% 
-% subplot(3,1,3)
-% hold on
-% grid on
-% plot(cust_time, drone_posz,'r')
-% plot(int_time, int_pz,'b')
-% ylabel("Meter [m]")
-% legend('Vicon', 'Estimate')
-% title("Z coordinates")
-% 
-% %% Error between internal and vicon data
-% % This section analyzes the estimate difference between internal data (from
-% % EKF) and vicon data 
-% 
-% %interpolated vicon data with removal of NaN elements
-% interpolated_vicon_x = interp1(cust_time, drone_posx, int_time);
-% interpolated_vicon_x = rmmissing(interpolated_vicon_x);
-% interpolated_vicon_y = interp1(cust_time, drone_posy, int_time);
-% interpolated_vicon_y = rmmissing(interpolated_vicon_y);
-% interpolated_vicon_z = interp1(cust_time, drone_posz, int_time);
-% interpolated_vicon_z = rmmissing(interpolated_vicon_z);
-% 
-% int_px = int_px(1:length(interpolated_vicon_x));
-% error_x = abs(interpolated_vicon_x - int_px);
-% mean_error_x = mean(error_x);
-% 
-% int_py = int_py(1:length(interpolated_vicon_y));
-% error_y = abs(interpolated_vicon_y - int_py);
-% mean_error_y = mean(error_y);
-% 
-% int_pz = int_pz(1:length(interpolated_vicon_z));
-% error_z = abs(interpolated_vicon_z - int_pz);
-% mean_error_z = mean(error_z);
-% 
-% fprintf("Mean Position Error:\n x: %f, y: %f, z: %f\n", ...
-%         mean_error_x, mean_error_y, mean_error_z);
-% 
-% if exist('figure2') == 0  %#ok<*EXIST>
-%     figure('name', "Error between positions")
-% else
-%     figure2('name', "Error between positions")
-% end
-% 
-% subplot(3,1,1)
-% hold on
-% grid on
-% plot(int_time(1:length(interpolated_vicon_x)), error_x,'r')
-% ylabel("Meter [m]")
-% title("Error in X coordinates")
-% 
-% subplot(3,1,2)
-% hold on
-% grid on
-% plot(int_time(1:length(interpolated_vicon_y)), error_y,'r')
-% ylabel("Meter [m]")
-% title("Error in Y coordinates")
-% 
-% subplot(3,1,3)
-% hold on
-% grid on
-% plot(int_time(1:length(interpolated_vicon_z)), error_z,'r')
-% ylabel("Meter [m]")
-% title("Error in Z coordinates")
 
 %% Comparison between Euler angles
 % This section analyzes the drone's internal attitude estimation with the
@@ -237,7 +97,6 @@ set(subplot(3,1,1), 'Position', [0.06, 0.74, 0.92, 0.215]);
 set(subplot(3,1,2), 'Position', [0.06, 0.43, 0.92, 0.215]);
 set(subplot(3,1,3), 'Position', [0.06, 0.09, 0.92, 0.215]);
 set(gcf, 'Color', 'w');
-
 
 %% Comparison between positions
 % This section analyzes the drone's internal position estimation with the
@@ -335,6 +194,7 @@ hold on
 grid on
 plot(int_time(1:length(interpolated_vicon_z)), error_z,'r')
 ylabel("Meter [m]",'interpreter', 'latex')
+xlabel('Seconds $[s]$','Interpreter','latex')
 title("Error in Z coordinates",'interpreter', 'latex')
 set(gca, 'FontSize', 18);
 

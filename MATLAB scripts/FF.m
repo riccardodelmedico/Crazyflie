@@ -1,6 +1,11 @@
 function [x_est, x_dot_est, x_ddot_est] = FF(order, x, x_dot, time, beta)
+%FF function implements fading filter equations
+%   User can decide the order of the filter and the beta parameter; time is
+%   the time vector from which dt's are obtained;
+%   x: measures vector  
+%   x_dot: initial first derivative estimation
 n = length(x);
-nb= length(beta);
+nb = length(beta);
 x_est = zeros(n,nb);
 x_dot_est = zeros(n,nb);
 x_ddot_est = zeros(n,nb);

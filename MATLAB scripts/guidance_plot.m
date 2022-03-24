@@ -1,6 +1,7 @@
 clear; close all; clc
 
 %% File loading
+% For important guidance experiments please see README of report. 
 name = "crazyfun__20220311_161018.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
@@ -29,6 +30,7 @@ clear raw_core
 clear current_file delimiterIn headerlinesIn name path
 
 %% Data extraction
+% Extracted data
 target_px = core_data(:,1);
 target_py = core_data(:,2);
 drone_px = core_data(:,3);
@@ -56,12 +58,10 @@ guidance_sigma_dot = guidance_data(:,2);
 guidance_time = guidance_data(:,3);
 
 clear vicon_data internal_data
-% x0= 0.08;
-% y0= 0.07;
-% width= 0.87;
-% height= 0.9;
 
 %% Animation of the guidance
+% This section creates 2D animation of the guidance using target and drone
+% trajectories.
 figure('name', "2D Guidance Visualization in Vicon Reference Frame")
 hold on
 grid on
@@ -97,6 +97,9 @@ set(gcf, 'Color', 'w');
 
 
 %% LOS and LOS rate plot
+% This section plots LOS and LOS rate using quantities derived both from
+% only Vicon measures and mixed (KF and Vicon) measures. There is also LOS
+% rate output of FF, used in guidance law.
 figure('name', "LOS (sigma) and LOS rate (sigma_dot)")
 subplot(2,1,1)
 hold on
@@ -130,6 +133,9 @@ set(gcf, 'Color', 'w');
 
     
 %% Range and Closing Velocity plot
+% This section plots R and closing velocity using quantities derived both
+% from only Vicon measures and mixed (KF and Vicon) measures. There is also
+% closing velocity output of FF, used in guidance law.
 figure('name', "Range(R) and Closing Velocity(-R_dot)")
 subplot(2,1,1)
 hold on
@@ -161,11 +167,9 @@ set(subplot(2,1,1), 'Position', [0.06, 0.57, 0.92, 0.38]);
 set(subplot(2,1,2), 'Position', [0.06, 0.09, 0.92, 0.38]);
 set(gcf, 'Color', 'w');
     
-%% Acceleration subsection 
-
-
-
 %% Timing analysis
+% This section analyzes timing of execution of DataCore and DroneGuidance
+% threads. 
 figure('name', "Threads Timing")
 subplot(2,1,1)
 hold on

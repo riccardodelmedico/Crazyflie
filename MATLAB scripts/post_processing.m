@@ -1,6 +1,6 @@
 clear; clc; close all;
 
-%% Data extraction
+%% File loading
 name = "crazyfun__20220311_161132.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
@@ -27,6 +27,7 @@ clear raw_core
 clear current_file delimiterIn headerlinesIn name path
 
 %% Data Extraction 
+% Extracted Data
 target_px = core_data(:,1);
 target_py = core_data(:,2);
 drone_px = core_data(:,3);
