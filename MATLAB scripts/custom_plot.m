@@ -1,7 +1,7 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220315_110817.txt";
+name = "crazyfun__20220315_110052.txt";
 % crazyfun__20220315_110052 : default parameters with angles correction
 % crazyfun__20220315_110420 : modified parameters with angles correction
 % crazyfun__20220315_110817 : modified parameters without angles correction
@@ -59,6 +59,15 @@ clear wand_data set_data vicon_data internal_data
 %% Comparison between Euler angles
 % This section analyzes the drone's internal attitude estimation with the
 % Vicon-captured angles
+% MATLAB uses q = [w x y z]
+% Vicon creates q = [x y z w]
+
+% Conversion to Euler angles from the Vicon-generated quaternions
+vicon_quat = [drone_quatw, drone_quatx, drone_quaty, drone_quatz];
+vicon_euler = rad2deg(quat2eul(vicon_quat,'XYZ'));
+
+% orientation quaternion derived from internal estimate
+crazy_euler = [int_roll, int_pitch, int_yaw];
 
 figure('name', "Comparison between Euler angles from internal data and from Vicon")
 

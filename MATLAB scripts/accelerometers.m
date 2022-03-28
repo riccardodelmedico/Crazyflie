@@ -1,10 +1,8 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220325_170255.txt";
-% crazyfun__20220315_110052 : default parameters with angles correction
-% crazyfun__20220315_110420 : modified parameters with angles correction
-% crazyfun__20220315_110817 : modified parameters without angles correction
+name = "crazyfun__20220325_165854.txt";
+
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -35,41 +33,62 @@ int_yaw = internal_data(:,6);           % /
 int_time = internal_data(:,end);
 int_time = int_time - int_time(1);
 
+% acc_x = smooth(acc_x, 20);
+% acc_y = smooth(acc_y, 20);
+% acc_z = smooth(acc_z, 20);
+
 %% plot acc
-figure(1)
+figure('name', 'x-acceleration in body frame')
+hold on
 grid on
 grid minor
 plot(int_time,acc_x)
 
-figure(2)
+figure('name', 'y-acceleration in body frame')
+hold on
 grid on
 grid minor
 plot(int_time,acc_y)
 
-figure(3)
+figure('name', 'z-acceleration in body frame')
+hold on
 grid on
 grid minor
 plot(int_time,acc_z)
 acc = [acc_x, acc_y, acc_z];
 world_acc= zeros(length(int_time),3);
+comm_acc_b = [0; -0.5; 0];
+
 for i=1:1:length(int_time)
-    R_x = elem_rot(int_roll(i),1);
-    R_y = elem_rot(- int_pitch(i),2);
-    R_z = elem_rot(int_yaw(i),3); 
-    R = R_z * R_y * R_x; 
-        
+    R_x = elem_rot(deg2rad(int_roll(i)), 1);
+    R_y = elem_rot(deg2rad(int_pitch(i)), 2);
+    R_z = elem_rot(deg2rad(int_yaw(i)), 3); 
+    %R = R_z * R_y * R_x; 
+    R = R_y * R_x;
+    %commandend_acc = R * comm_acc_b;
+
     world_acc(i,:) = R * acc(i,:)';
 end
 
-figure(4)
+% world_acc(:,1) = smooth(world_acc(:,1), 20);
+% world_acc(:,2) = smooth(world_acc(:,2), 20);
+% world_acc(:,3) = smooth(world_acc(:,3), 20);
+
+figure('name', 'x-acceleration in world frame')
+hold on
 grid on 
+grid minor
 plot(int_time,world_acc(:,1))
 
-figure(5)
+figure('name', 'y-acceleration in world frame')
+hold on
 grid on 
+grid minor
 plot(int_time,world_acc(:,2))
 
-figure(6)
+figure('name', 'z-acceleration in world frame')
+hold on
 grid on 
+grid minor
 plot(int_time,world_acc(:,3))
 

@@ -2,7 +2,7 @@ clear; close all; clc
 
 %% File loading
 % For important guidance experiments please see README of report. 
-name = "crazyfun__20220324_122627.txt";
+name = "crazyfun__20220324_120929.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -198,11 +198,11 @@ set(gca, 'FontSize', 18);
 set(gcf, 'Color', 'w');
 
 %--------------- USER HAS TO CHOOSE THE CORRECT ONE ----------------------%
-plot(guidance_time, acc_c_png)
-legend('$A^c_{png}$', 'Interpreter', 'latex')
+%plot(guidance_time, acc_c_png)
+%legend('$A^c_{png}$', 'Interpreter', 'latex')
 %-------------------------------------------------------------------------%
-%plot(guidance_time, acc_c_apng)
-%legend('$A^c_{apng}$', 'Interpreter', 'latex')
+plot(guidance_time, acc_c_apng)
+legend('$A^c_{apng}$', 'Interpreter', 'latex')
 %-------------------------------------------------------------------------%
 
 %% Timing analysis

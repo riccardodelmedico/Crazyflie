@@ -1,7 +1,7 @@
 clear; clc; close all;
 
 %% File loading
-name = "crazyfun__20220311_161132.txt";
+name = "crazyfun__20220324_120929.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -139,7 +139,7 @@ set(subplot(2,2,2), 'Position', [0.55, 0.58, 0.43, 0.35]);
 set(subplot(2,2,3), 'Position', [0.06, 0.09, 0.43, 0.35]);
 set(subplot(2,2,4), 'Position', [0.55, 0.09, 0.43, 0.35]);
 
-% Guidance
+%% Guidance
 beta_sigma = [0.1,0.3,0.5];
 [ff_sigma, ff_sigma_dot, ~]= FF(2, core_sigma, sm_sigma_dot(1), core_time, beta_sigma);
 beta_r = [0.15,0.35,0.55];
@@ -153,4 +153,31 @@ plot_fading_filter('Smooth vs filtered $\dot{R}$', '$[m/s]$', core_time(2:end), 
 set(subplot(2,1,1), 'Position', [0.06, 0.59, 0.92, 0.37]);
 set(subplot(2,1,2), 'Position', [0.06, 0.09, 0.92, 0.37]);
 
+%% Comparison between y_r_ddot and additional acceleration used in APNG
+% This section compares the second derivative of y_r = R*sigma with the
+% addition term used in APNG obtained projecting target acceleration along
+% LOS normal direction.
+N = 5;
+core_y_r = core_sigma.* core_r;
+[sm_y_r_dot, sm_y_r_ddot, ir_y_r_dot, ir_y_r_ddot] = smoothing(drone_px, 20, core_time);
+
+acc_t_apng = zeros(length(core_sigma), 1);
+
+for i = 1:length(core_sigma)
+    acc_t_apng(i) = target_est_ax(i)*cos(core_sigma(i) + pi/2) + ...
+                    target_est_ay(i)*sin(core_sigma(i) + pi/2);
+end
+
+figure('name', "Comparison between y_r_ddot e A_t")
+hold on
+grid on
+xlabel("$[s]$",'Interpreter', 'latex')
+ylabel("$[m/s^2]$",'Interpreter', 'latex')
+title("Comparison between $\ddot{y_r}$ and $A^t_{apng}$",'Interpreter', 'latex')
+axis equal 
+set(gca, 'FontSize', 18);
+set(gcf, 'Color', 'w');
+plot(core_time(3:end), N*ir_y_r_ddot/2, 'b')
+plot(core_time, acc_t_apng/2, 'r')
+legend('$\ddot{y_r}$', '$A^t_{apng}$', 'Interpreter', 'latex')
 
