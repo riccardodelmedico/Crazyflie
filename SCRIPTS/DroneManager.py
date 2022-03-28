@@ -188,7 +188,7 @@ class DroneManager:
 
         self.get_state()
         phase_mutex.acquire(blocking=True)
-        guidance_phase = 1
+        # guidance_phase = 1
         phase_mutex.release()
         print('Inside Virtual Box')
 

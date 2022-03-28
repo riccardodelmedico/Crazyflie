@@ -12,7 +12,7 @@ Wand = "Active Wand v2 (Origin Tracking)"
 uri = 'radio://0/80/2M'
 
 # The height the drone has to reach at the end of the take-off.
-DEFAULT_HEIGHT = 0.75  # [m]
+DEFAULT_HEIGHT = 0.5  # [m]
 
 # Utility flags
 got_frame = 0
@@ -24,6 +24,7 @@ attempts = 10
 # Used in the generation of the position reference for the drone
 drone_or = np.mat([0.0, 0.0, 0.0, 0.0])
 drone_pos = np.array([0.0, 0.0, 0.0])
+drone_pose = np.array([0.0, 0.0, 0.0])
 
 # Used by DroneManager to access drone internal state (KF)
 pos_estimate = np.array([0.0, 0.0, 0.0])

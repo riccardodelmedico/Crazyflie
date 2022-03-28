@@ -62,6 +62,27 @@ def print_callback(timestamp, data, log_conf):
     # Print state estimate to file
     int_matlab.write(pos_x, pos_y, pos_z, roll, pitch, yaw, time.time())
 
+def print_callback_acc(timestamp, data, log_conf):
+    """
+    Prints gathered data to a specific file.
+    :param data: Data to be logged.
+    :type data:
+    :return: None.
+    :rtype: None
+    """
+    global prova_yaw
+    g = 9.81
+    acc_x = data['acc.x'] * g
+    acc_y = data['acc.y'] * g
+    acc_z = data['acc.z'] * g
+    roll = data['stabilizer.roll']
+    pitch = data['stabilizer.pitch']
+    prova_yaw = yaw = data['stabilizer.yaw']
+
+
+    # Print state estimate to file
+    int_matlab.write(acc_x, acc_y, acc_z, roll, pitch, yaw, time.time())
+
 
 def datalog_async(sync_crazyflie, log_conf):
     """
@@ -78,11 +99,35 @@ def datalog_async(sync_crazyflie, log_conf):
 
     crazyflie = sync_crazyflie.cf
     crazyflie.log.add_config(log_conf)
-    if estimation_mode:
-        log_conf.data_received_cb.add_callback(print_callback)
-    else:
-        log_conf.data_received_cb.add_callback(print_callback_guidance)
+    log_conf.data_received_cb.add_callback(print_callback_acc)
 
+
+def datalog_acc(sync_crazyflie):
+    """
+        Prepares the call to "datalog_async" and achieves it.
+        Adds a log configuration to the Crazyflie with desired variables
+        logged every 'datalog_period' milliseconds.
+
+        :param sync_crazyflie: Synchronization wrapper of the Crazyflie object.
+        :type sync_crazyflie: SyncCrazyflie object
+        :return: Log configuration to get the drone internal estimate.
+        :rtype: LogConfig object
+        """
+
+    global datalog_period
+
+    measure_log = LogConfig(name='TotalEstimate', period_in_ms=datalog_period)
+
+    measure_log.add_variable('acc.x', 'float')
+    measure_log.add_variable('acc.y', 'float')
+    measure_log.add_variable('acc.z', 'float')
+    measure_log.add_variable('stabilizer.roll', 'float')
+    measure_log.add_variable('stabilizer.pitch', 'float')
+    measure_log.add_variable('stabilizer.yaw', 'float')
+
+    datalog_async(sync_crazyflie, measure_log)
+
+    return measure_log
 
 def datalog(sync_crazyflie):
     """
@@ -404,3 +449,4 @@ tracking = True
 pos_limit = 0.001  # [m]
 max_equal_pos = 10
 callback_mutex = threading.Semaphore(value=1)
+prova_yaw = 0
