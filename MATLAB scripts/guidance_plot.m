@@ -2,7 +2,7 @@ clear; close all; clc
 
 %% File loading
 % For important guidance experiments please see README of report. 
-name = "crazyfun__20220324_121203.txt";
+name = "crazyfun__20220324_101721.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -93,6 +93,23 @@ for i = 1:length(core_time)
     drawnow limitrate 
     pause(0.01)
 end
+set(gcf, 'Color', 'w');
+
+%% Interception scenary
+figure('name', 'Interception scenary')
+title('Interception scenary', 'interpreter','latex')
+hold on
+grid on
+grid minor
+axis equal
+plot(target_px, target_py, '--', 'Linewidth', 1.5, 'Color','k')
+plot(drone_px, drone_py, 'Linewidth', 1.5, 'Color','k')
+plot(target_px(end), target_py(end), 'o', 'Linewidth', 2.5, 'Color', 'k')
+plot(drone_px(end), drone_py(end), 's','Linewidth', 2.5, 'Color','k')
+xlabel('X-axis $[m]$','interpreter','latex')
+ylabel('Y-axis $[m]$','interpreter','latex')
+legend('Target','Pursuer','interpreter','latex')
+set(gca, 'FontSize', 18, 'Position', [0.06,0.09,0.92,0.86]);
 set(gcf, 'Color', 'w');
 
 
@@ -193,16 +210,19 @@ hold on
 grid on
 xlabel("$[s]$",'Interpreter', 'latex')
 ylabel("$[m/s^2]$",'Interpreter', 'latex')
+title('Commanded Acceleration','interpreter','latex')
 % axis equal 
-set(gca, 'FontSize', 18);
+set(gca, 'FontSize', 18, 'Position', [0.06,0.09,0.92,0.86]);
 set(gcf, 'Color', 'w');
 
 %--------------- USER HAS TO CHOOSE THE CORRECT ONE ----------------------%
-plot(guidance_time, acc_c_png)
-legend('$A^c_{png}$', 'Interpreter', 'latex')
+% plot(guidance_time, acc_c_png)
+% plot(guidance_time, acc_c_png, 'Color', 'k', 'Linewidth', 1.25)
+% legend('$A^c_{png}$', 'Interpreter', 'latex')
 %-------------------------------------------------------------------------%
 %plot(guidance_time, acc_c_apng)
-%legend('$A^c_{apng}$', 'Interpreter', 'latex')
+plot(guidance_time, acc_c_apng, 'Color', 'k', 'Linewidth', 1.25)
+legend('$A^c_{apng}$', 'Interpreter', 'latex')
 %-------------------------------------------------------------------------%
 
 %% Timing analysis
@@ -261,5 +281,3 @@ xlabel("$[s]$",'Interpreter', 'latex')
 ylabel("$[m/s^2]$",'Interpreter', 'latex')
 set(gca, 'FontSize', 18);
 set(gcf, 'Color', 'w');
-
-    
