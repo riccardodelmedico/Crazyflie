@@ -75,20 +75,37 @@ end
 % world_acc(:,3) = smooth(world_acc(:,3), 20);
 
 figure('name', 'x-acceleration in world frame')
+title('X-acceleration with roll and pitch compensation', 'interpreter', 'latex')
+
 hold on
 grid on 
 grid minor
 plot(int_time,world_acc(:,1))
+xlabel("$[s]$",'Interpreter', 'latex')
+ylabel("$[m/s^2]$",'Interpreter', 'latex')
+set(gca, 'FontSize', 18, 'Position', [0.06,0.1,0.92,0.86]);
+set(gcf, 'Color', 'w');
 
 figure('name', 'y-acceleration in world frame')
+title('Y-acceleration with roll and pitch compensation', 'interpreter', 'latex')
+
 hold on
 grid on 
 grid minor
 plot(int_time,world_acc(:,2))
+xlabel("$[s]$",'Interpreter', 'latex')
+ylabel("$[m/s^2]$",'Interpreter', 'latex')
+set(gca, 'FontSize', 18, 'Position', [0.06,0.1,0.92,0.86]);
+set(gcf, 'Color', 'w');
 
 figure('name', 'z-acceleration in world frame')
+title('Z-acceleration with roll and pitch compensation', 'interpreter', 'latex')
 hold on
 grid on 
 grid minor
 plot(int_time,world_acc(:,3))
+xlabel("$[s]$",'Interpreter', 'latex')
+ylabel("$[m/s^2]$",'Interpreter', 'latex')
+set(gca, 'FontSize', 18, 'Position', [0.06,0.1,0.92,0.86]);
+set(gcf, 'Color', 'w');
 
