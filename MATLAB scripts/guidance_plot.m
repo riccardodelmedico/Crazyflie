@@ -281,20 +281,3 @@ xlabel("$[s]$",'Interpreter', 'latex')
 ylabel("$[m/s^2]$",'Interpreter', 'latex')
 set(gca, 'FontSize', 18);
 set(gcf, 'Color', 'w');
-
-
-
-
-
-%% cerco di estrarre la velocità
-vel_mod = zeros(length(core_time),1);
-vel_t_mod = zeros(length(core_time),1);
-acc_t_mod = zeros(length(core_time),1);
-for i=1:length(core_time)
-    vel_mod(i) = sqrt(drone_est_vx(i)^2 + drone_est_vy(i)^2);
-    vel_t_mod(i) = sqrt(target_est_vx(i)^2 + target_est_vy(i)^2);
-    acc_t_mod(i) = sqrt(target_est_ax(i)^2 + target_est_ay(i)^2);
-end
-mean(vel_mod)
-mean(vel_t_mod)
-mean(acc_t_mod)
