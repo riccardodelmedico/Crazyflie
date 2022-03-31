@@ -41,21 +41,13 @@ def guidance_png_command(guidance, n, r_interception):
     acc_apng = t_acc_x * math.cos(sigma + math.pi / 2) + \
         t_acc_y * math.sin(sigma + math.pi / 2)
 
-    acc = n * est_dot_sigma * -est_dot_r# + acc_apng/2
-    guidance.drone.get_state()
-    omega = - math.degrees(
-        acc / np.linalg.norm(guidance.drone.velocity[0:2], 2))
+    acc = n * est_dot_sigma * -est_dot_r  # + acc_apng/2
 
-    # omega saturation
-    if omega > 120:
-        omega = 120
-    elif omega < -120:
-        omega = -120
     guidance.guidance_data[0] = est_dot_r
     guidance.guidance_data[1] = est_dot_sigma
     guidance.guidance_data[2] = new_time
     guidance.logger.append(guidance.guidance_data)
-    guidance.send_command(guidance.v, 0.0, omega)
+    guidance.send_command(acc)
 
 
 class DroneGuidance:
@@ -133,5 +125,14 @@ class DroneGuidance:
     def stop(self):
         self.update_thread.join()
 
-    def send_command(self, vx, vy, omega):
-        self.drone.send_command(vx, vy, omega)
+    def send_command(self, acc):
+        self.drone.get_state()
+        v = self.seeker.get_drone_vel()
+        omega = - math.degrees(acc / v)
+
+        # omega saturation
+        if omega > 120:
+            omega = 120
+        elif omega < -120:
+            omega = -120
+        self.drone.send_command(self.v, 0, omega)

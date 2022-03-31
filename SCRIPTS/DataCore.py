@@ -18,6 +18,8 @@ guidance_variable = np.zeros((data_dimension, 1))
 
 # dictionary used to access DataCore guidance_variable
 access_data = {
+    'd_est_vel_x':6,
+    'd_est_vel_y':7,
     'r': 8,
     'sigma': 9,
     'r_dot_ff': 10,
