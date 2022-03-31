@@ -2,7 +2,7 @@ clear; close all; clc
 
 %% File loading
 % For important guidance experiments please see README of report. 
-name = "crazyfun__20220311_102238.txt";
+name = "crazyfun__20220324_122627.txt";
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
@@ -260,22 +260,22 @@ set(subplot(2,1,2), 'Position', [0.07, 0.09, 0.92, 0.38]);
 set(gcf, 'Color', 'w');
 
 %% Calculation of yr_ddot
-core_sigma_post = core_sigma(183:end,1)-core_sigma(183,1); % Arbitrarily time since sigma_dot==0
-yr= core_r(183:end).* core_sigma_post; 
-[yr_dot, yr_ddot, ~, ~] = smoothing(yr, 20, core_time(183:end));
+yr= core_r.* core_sigma; 
+[yr_dot, yr_ddot, ~, ~] = smoothing(yr, 20, core_time);
 figure('name', 'Yr_ddot vs Commanded acceleration')
 title('$\ddot{Y}_r$ vs Commanded acceleration','Interpreter', 'latex')
 hold on
 grid on
-plot(core_time(185:end,1), yr_ddot)
+plot(core_time(3:end), yr_ddot)
 
+acc_comand = zeros(length(core_time),1);
 % APNG term in commanded acceleration
 for i = 1:length(core_time)
-    acc_comand(i,:) = target_est_ax(i)* cos(core_sigma(i)+pi/2)+ target_est_ay(i)* sin(core_sigma(i)+pi/2);
+    acc_comand(i) = target_est_ax(i)* cos(core_sigma(i)+pi/2)+ target_est_ay(i)* sin(core_sigma(i)+pi/2);
 end
 
 grid minor
-plot(core_time(185:end,1), acc_comand(185:end,1))
+plot(core_time, acc_comand)
 legend('$\ddot{Y}_r$', '$A^c_{APNG}$', 'interpreter', 'latex')
 xlabel("$[s]$",'Interpreter', 'latex')
 ylabel("$[m/s^2]$",'Interpreter', 'latex')
