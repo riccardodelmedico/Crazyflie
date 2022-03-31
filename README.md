@@ -1,11 +1,24 @@
-# Crazyflie
+m# Crazyflie
 Master Degree Project for Navigation and Guidance Systems class. 
 Crazyflie repository made by Cioni, Del Medico, Gazzanelli
 
-crazyfun__20220311_102238 - Kalman nostri, no correzioni
-crazyfun__20220311_103259 - Kalman base
+Estimation test:
+Default parameters with angles correction:
+       
+    crazyfun__20220315_110052
+Modified parameters with angles correction:
 
-Costante di guida sempre pari a 5.
+    crazyfun__20220315_110420
+Modified parameters without angles correction:
+ 
+    crazyfun__20220315_110817
+Yaw-test with angles correction:
+  
+    crazyfun__20220317_101010
+Yaw-test without angles correction:
+    
+    crazyfun__20220317_100512
+Guidance Test (N:=5):
 
  Guida con Target Accelleratne (HE:=0)
 APNG[Vd=0.75[m/s]; pos_in_t=[-1,1.5][m]; vel_in_t=[0,-0.55][m/s], acc_mod = 0.35 [m/s^2]]

@@ -1,15 +1,18 @@
 clear; close all; clc
 
 %% File loading
-name = "crazyfun__20220315_110817.txt";
+name = "crazyfun__20220317_101010.txt";
 % crazyfun__20220315_110052 : default parameters with angles correction
 % crazyfun__20220315_110420 : modified parameters with angles correction
 % crazyfun__20220315_110817 : modified parameters without angles correction
+% crazyfun__20220317_101010 : Yaw-test with angles correction
+% crazyfun__20220317_100512 : Yaw-test without angles correction
+
 current_file = mfilename('fullpath');
 [path, ~, ~] = fileparts(current_file);
 
-internal = fullfile(path, '..\internal_data\', name);
-vicon = fullfile(path, '..\vicon_data\', name); 
+internal = fullfile(path, '../internal_data/', name);
+vicon = fullfile(path, '../vicon_data/', name);
 
 delimiterIn = ' ';
 headerlinesIn = 1;
@@ -27,18 +30,18 @@ if isstruct(raw_vicon_data)
 else
     vicon_data = raw_vicon_data;
 end
- 
+
 clear wand vicon setpoints internal
 clear raw_set_data raw_vicon_data raw_wand raw_internal_data
 clear current_file delimiterIn headerlinesIn name path
 
 %% Data extraction
-% Extracted data                        Variables meaning 
+% Extracted data                        Variables meaning
 drone_posx = vicon_data(:,1);           % \
 drone_posy = vicon_data(:,2);           %  |-> drone position from Vicon, in Vicon frame [m]
 drone_posz = vicon_data(:,3);           % /
 drone_quatx = vicon_data(:,4);          %  \
-drone_quaty = vicon_data(:,5);          %   |-> drone orientation through quaternions from Vicon 
+drone_quaty = vicon_data(:,5);          %   |-> drone orientation through quaternions from Vicon
 drone_quatz = vicon_data(:,6);          %  /
 drone_quatw = vicon_data(:,7);          % /
 cust_time = vicon_data(:,end);
@@ -59,6 +62,15 @@ clear wand_data set_data vicon_data internal_data
 %% Comparison between Euler angles
 % This section analyzes the drone's internal attitude estimation with the
 % Vicon-captured angles
+% MATLAB uses q = [w x y z]
+% Vicon creates q = [x y z w]
+
+% Conversion to Euler angles from the Vicon-generated quaternions
+vicon_quat = [drone_quatw, drone_quatx, drone_quaty, drone_quatz];
+vicon_euler = rad2deg(quat2eul(vicon_quat,'XYZ'));
+
+% orientation quaternion derived from internal estimate
+crazy_euler = [int_roll, int_pitch, int_yaw];
 
 figure('name', "Comparison between Euler angles from internal data and from Vicon")
 
@@ -142,7 +154,7 @@ set(gcf, 'Color', 'w');
 
 %% Error between internal and vicon data
 % This section analyzes the estimate difference between internal data (from
-% EKF) and vicon data 
+% EKF) and vicon data
 
 %interpolated vicon data with removal of NaN elements
 interpolated_vicon_x = interp1(cust_time, drone_posx, int_time);
@@ -202,4 +214,3 @@ set(subplot(3,1,1), 'Position', [0.06, 0.74, 0.92, 0.215]);
 set(subplot(3,1,2), 'Position', [0.06, 0.43, 0.92, 0.215]);
 set(subplot(3,1,3), 'Position', [0.06, 0.09, 0.92, 0.215]);
 set(gcf, 'Color', 'w');
-
