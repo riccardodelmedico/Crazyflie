@@ -22,3 +22,4 @@ class Seeker:
         vel_drone = ['d_est_vel_x', 'd_est_vel_y']
         [vx, vy, _] = get_data(vel_drone)
         drone_v = numpy.linalg.norm(numpy.array([vx, vy]), 2)
+        return drone_v

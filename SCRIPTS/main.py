@@ -35,10 +35,10 @@ while len(np.argwhere(in_p == 0.0)) == 3:
     in_p = get_wand_position()
 print("Wand position initialized with 'real' values")
 
-wand = False
+wand = True
 in_p = np.array([0.8, 2.0, 0])
 in_v = np.array([-0.33, -0.33, 0])
-in_a = 0#1/6
+in_a = 0
 
 guidance_beta = np.array([0.35, 0.3])
 core_beta = np.array([0.45, 0.45])
@@ -46,7 +46,7 @@ yr_ff_beta = 0.65
 
 delta = 0.02
 initial_drone_pos = np.array([0.8, -1.5])
-chase_velocity = np.array([0, 0.60])
+chase_velocity = np.array([0, 0.80])
 data_list = ["r", "sigma", "t_acc_x", "t_acc_y"]
 
 virtual_box = np.array([1.2, -1.5, 2.0, -1.0])

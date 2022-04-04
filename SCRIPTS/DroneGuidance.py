@@ -35,13 +35,13 @@ def guidance_png_command(guidance, n, r_interception):
 
     (_, est_dot_r) = guidance.r_ff.update(np.array([r]), new_time)
     (_, est_dot_sigma) = guidance.sigma_ff.update(np.array([sigma]), new_time)
-    (_, est_dot_yr, est_ddot_yr) = guidance.yr_ff.update(np.array([yr]),
-                                                         new_time)
+    # (_, est_dot_yr, est_ddot_yr) = guidance.yr_ff.update(np.array([yr]),
+    #                                                      new_time)
 
     acc_apng = t_acc_x * math.cos(sigma + math.pi / 2) + \
         t_acc_y * math.sin(sigma + math.pi / 2)
 
-    acc = n * est_dot_sigma * -est_dot_r  # + acc_apng/2
+    acc = n * est_dot_sigma * -est_dot_r  + acc_apng/2
 
     guidance.guidance_data[0] = est_dot_r
     guidance.guidance_data[1] = est_dot_sigma
@@ -127,8 +127,9 @@ class DroneGuidance:
 
     def send_command(self, acc):
         self.drone.get_state()
-        v = self.seeker.get_drone_vel()
-        omega = - math.degrees(acc / v)
+        # v1 = self.seeker.get_drone_vel()
+        v2 = np.linalg.norm(self.drone.velocity[0:2], 2)
+        omega = - math.degrees(acc / v2)
 
         # omega saturation
         if omega > 120:
