@@ -40,10 +40,10 @@ drone_quaty = vicon_data(:,5);          %   |-> drone orientation through quater
 drone_quatz = vicon_data(:,6);          %  /
 drone_quatw = vicon_data(:,7);          % /
 cust_time = vicon_data(:,end);
-% cust_time = cust_time - cust_time(1);
-[~, sm_vicon_acc_x, ~, ir_vicon_acc_x] = smoothing(drone_posx, 20, cust_time);
-[~, sm_vicon_acc_y, ~, ir_vicon_acc_y] = smoothing(drone_posy, 20, cust_time);
-[~, sm_vicon_acc_z, ~, ir_vicon_acc_z] = smoothing(drone_posz, 20, cust_time);
+
+[sm_vicon_vel_x, sm_vicon_acc_x, ~, ir_vicon_acc_x] = smoothing(drone_posx, 10, cust_time);
+[sm_vicon_vel_y, sm_vicon_acc_y, ~, ir_vicon_acc_y] = smoothing(drone_posy, 10, cust_time);
+[~, sm_vicon_acc_z, ~, ir_vicon_acc_z] = smoothing(drone_posz, 10, cust_time);
 
 acc_x = internal_data(:,1);
 acc_y = internal_data(:,2);
@@ -52,16 +52,13 @@ int_roll = internal_data(:,4);          % \
 int_pitch = -internal_data(:,5);        %  |-> internal estimate of drone attitude
 int_yaw = internal_data(:,6);           % /
 int_time = internal_data(:,end);
-% int_time = int_time - int_time(1);
 
-% acc_x = smooth(acc_x, 20);
-% acc_y = smooth(acc_y, 20);
-% acc_z = smooth(acc_z, 20);
 
 % Conversion to Euler angles from the Vicon-generated quaternions
+% MATLAB uses q = [w x y z]
+% Vicon creates q = [x y z w]
 vicon_quat = [drone_quatw, drone_quatx, drone_quaty, drone_quatz];
 vicon_euler = quat2eul(vicon_quat,'XYZ');
-
 
 sm_vicon_acc_x = interp1(cust_time(3:end), sm_vicon_acc_x, int_time);
 sm_vicon_acc_y = interp1(cust_time(3:end), sm_vicon_acc_y, int_time);
@@ -72,6 +69,8 @@ vicon_pitch = interp1(cust_time, vicon_euler(:,2), int_time);
 vicon_yaw = interp1(cust_time, vicon_euler(:,3), int_time);
 
 %% Acceleration plot
+int_time = int_time - int_time(1);
+
 figure('name', 'x-acceleration in body frame')
 hold on
 grid on
@@ -94,24 +93,29 @@ world_acc = zeros(length(int_time),3);
 world_acc_vicon = zeros(length(int_time),3);
 comm_acc_b = [0; -0.5; 0];
 
+sm_acc_par_axes = zeros(length(int_time),3);
+
 for i=1:1:length(int_time)
     % Internal Angles
     R_x = elem_rot(deg2rad(int_roll(i)), 1);
     R_y = elem_rot(deg2rad(int_pitch(i)), 2);
     R_z = elem_rot(deg2rad(int_yaw(i)), 3);
-    %R = R_y * R_x;
-    R = R_z * R_y * R_x;
+
+    R = R_y * R_x;
+    %R = R_z * R_y * R_x;
     
     % Vicon Angles
     R_x_vicon = elem_rot(vicon_roll(i), 1);
     R_y_vicon = elem_rot(vicon_pitch(i), 2);
     R_z_vicon = elem_rot(vicon_yaw(i), 3);
+
     R_vicon = R_z_vicon * R_y_vicon * R_x_vicon;
+    R_vicon_2 = R_z_vicon';
  
     world_acc(i,:) = R * acc(i,:)';
     world_acc_vicon(i,:) = R_vicon * acc(i,:)';
+    sm_acc_par_axes(i,:) = R_z' * [sm_vicon_acc_x(i); sm_vicon_acc_y(i); sm_vicon_acc_z(i)];
 end
-int_time = int_time - int_time(1);
 
 figure('name', 'x-acceleration in world frame')
 title('X-acceleration with roll and pitch compensation', 'interpreter', 'latex')
@@ -121,13 +125,14 @@ grid on
 grid minor
 plot(int_time,world_acc(:,1))
 plot(int_time, world_acc_vicon(:,1))
-plot(int_time, sm_vicon_acc_x, 'LineWidth', 2, 'Color', 'black')
+plot(int_time, sm_acc_par_axes(:,1), 'LineWidth', 2, 'Color', 'black')
 xlabel("$[s]$",'Interpreter', 'latex')
 ylabel("$[m/s^2]$",'Interpreter', 'latex')
 legend('Internal angles', 'Vicon angles', 'Vicon mesures')
 set(gca, 'FontSize', 18, 'Position', [0.06,0.1,0.92,0.86]);
 set(gcf, 'Color', 'w');
 
+syms x real
 figure('name', 'y-acceleration in world frame')
 title('Y-acceleration with roll and pitch compensation', 'interpreter', 'latex')
 
@@ -136,7 +141,8 @@ grid on
 grid minor
 plot(int_time,world_acc(:,2))
 plot(int_time, world_acc_vicon(:,2))
-plot(int_time, sm_vicon_acc_y, 'LineWidth', 2, 'Color', 'black')
+plot(int_time, sm_acc_par_axes(:,2)/0.75, 'LineWidth', 2, 'Color', 'black')
+fplot(-1 * heaviside(x - 2), [0, 12], 'LineWidth', 2, 'Color', 'red')
 xlabel("$[s]$",'Interpreter', 'latex')
 ylabel("$[m/s^2]$",'Interpreter', 'latex')
 legend('Internal angles', 'Vicon angles', 'Vicon measures')
@@ -150,10 +156,19 @@ grid on
 grid minor
 plot(int_time,world_acc(:,3))
 plot(int_time, world_acc_vicon(:,3))
-plot(int_time, sm_vicon_acc_z + 9.81, 'LineWidth', 2, 'Color', 'black')
+plot(int_time, sm_acc_par_axes(:,3) + 9.81, 'LineWidth', 2, 'Color', 'black')
 xlabel("$[s]$",'Interpreter', 'latex')
 ylabel("$[m/s^2]$",'Interpreter', 'latex')
 legend('Internal angles', 'Vicon angles', 'Vicon measures')
 set(gca, 'FontSize', 18, 'Position', [0.06,0.1,0.92,0.86]);
 set(gcf, 'Color', 'w');
+ 
+%% 
+figure
+plot(drone_posx, drone_posy)
+hold on
+grid on
+grid minor
+axis equal
+quiver(drone_posx, drone_posy, cos(vicon_euler(:,3)), sin(vicon_euler(:,3)))
 
