@@ -163,12 +163,15 @@ legend('Internal angles', 'Vicon angles', 'Vicon measures')
 set(gca, 'FontSize', 18, 'Position', [0.06,0.1,0.92,0.86]);
 set(gcf, 'Color', 'w');
  
-%% 
-figure
+%% Drone trajectory 
+figure('name', 'Drone Trajectory in Vicon frame')
 plot(drone_posx, drone_posy)
 hold on
 grid on
 grid minor
 axis equal
 quiver(drone_posx, drone_posy, cos(vicon_euler(:,3)), sin(vicon_euler(:,3)))
-
+xlabel("$[m]$",'Interpreter', 'latex')
+ylabel("$[m]$",'Interpreter', 'latex')
+set(gca, 'FontSize', 18, 'Position', [0.06,0.1,0.92,0.86]);
+set(gcf, 'Color', 'w');
