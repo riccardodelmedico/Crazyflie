@@ -1,7 +1,6 @@
 clear; close all; clc
 
 % tempi dati da time.time() => test buoni:
-
 % crazyfun__20220207_161441 (targer accelerante)
 % crazyfun__20220207_161722 (targer accelerante)
 % crazyfun__20220209_151202 (target vel. costante)
@@ -12,6 +11,7 @@ clear; close all; clc
 % crazyfun__20220216_145025 (vicon ma utilizzando sempre time.time() )
 % crazyfun__20220216_165228 (target acc.)
 % crazyfun__20220216_170028 (target vel. costante) 
+
 %% File loading
 name = "crazyfun__20220216_165228.txt";
 current_file = mfilename('fullpath');
